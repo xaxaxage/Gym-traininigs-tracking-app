@@ -64,7 +64,7 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
 
   const save = (next: Workout) => putWorkout(next);
   const change = (e: WorkoutExercise) => save(mapExercise(getLatest(workout), e.id, () => e));
-  const pickHref = (swap?: string) => `#${href('/exercises/pick', { to: live ? 'active' : `workout:${workout.id}`, swap })}`;
+  const pickHref = (swap?: string) => `#${href('/exercises/pick', { to: `workout:${workout.id}`, swap })}`;
 
   const restFor_ = (e: WorkoutExercise) => e.restSeconds ?? prefFor(e.exerciseId, data).restSeconds ?? data.settings.restSeconds;
 

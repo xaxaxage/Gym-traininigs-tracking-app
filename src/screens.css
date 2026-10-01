@@ -589,7 +589,7 @@ dialog.sheet::backdrop {
 }
 .set-row {
   display: grid;
-  grid-template-columns: 34px minmax(52px, 1fr) minmax(60px, 84px) minmax(52px, 72px) var(--tap-big);
+  grid-template-columns: 30px minmax(52px, 1fr) minmax(60px, 80px) minmax(52px, 68px) var(--tap-big);
   gap: 6px;
   align-items: center;
   padding: 2px;
@@ -653,14 +653,16 @@ button.set-num {
   min-height: var(--tap);
   border: none;
   background: none;
-  padding: 0 4px;
+  padding: 0 2px;
   text-align: left;
   font-size: 13px;
+  line-height: 1.15;
   font-weight: 600;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  /* "83.75 × 8" may take two lines in a narrow column, never cut off. */
+  overflow-wrap: normal;
+  word-break: normal;
   border-radius: 8px;
 }
 .prev-btn:disabled {

@@ -17,6 +17,7 @@ import { doneSetCount, duplicateRoutine, isStale, moveItem, newRoutine, position
 import { workoutTotals } from '../lib/stats';
 import { fmtVolume } from '../lib/units';
 import { STARTER_PACKS, starterRoutines } from '../lib/starters';
+import { plural } from '../lib/format';
 import { BottomNav, Empty, Sheet, SheetAction, useElapsed } from '../components/Common';
 import { ArrowDown, ArrowUp, Copy, Dumbbell, Gear, More, Pencil, Play, Plus, Trash } from '../components/Icons';
 
@@ -209,7 +210,7 @@ function WeekStrip({ workouts, today }: { workouts: Workout[]; today: string }) 
   const volume = thisWeek.reduce((v, w) => v + workoutTotals(w).volume, 0);
   const { units } = useData().settings;
   return (
-    <a href="#/history" class="card week-strip" aria-label={`This week: ${thisWeek.length} workouts. Open history`}>
+    <a href="#/history" class="card week-strip" aria-label={`This week: ${plural(thisWeek.length, 'workout')}. Open history`}>
       <div class="week-head">
         <span class="section-title small">This week</span>
         <span class="muted small-text num">

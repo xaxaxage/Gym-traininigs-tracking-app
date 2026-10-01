@@ -84,7 +84,7 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
       }
     }
     if (!pick.swap) showToast(list.length === 1 ? `Added ${list[0].name}` : `Added ${list.length} exercises`, undefined, { carry: true });
-    goBack(pick.kind === 'workout' ? '/workout' : `/routine/${pick.routineId}`);
+    goBack(pick.kind === 'workout' ? `/workout/${pick.workoutId}` : `/routine/${pick.routineId}`);
   };
 
   const sections =
