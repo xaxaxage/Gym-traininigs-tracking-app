@@ -75,11 +75,3 @@ export function useLibrary(): LibraryState {
     };
   return { state: 'loading' };
 }
-
-let instructions: Record<string, string[]> | null = null;
-
-/** Step-by-step instructions, from their own chunk. */
-export async function loadInstructions(id: string): Promise<string[]> {
-  instructions ??= (await import('virtual:exercise-instructions')).default;
-  return instructions[id] ?? [];
-}

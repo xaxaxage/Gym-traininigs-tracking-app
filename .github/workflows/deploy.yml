@@ -25,6 +25,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Build the online Claude connector (as Vercel builds it)
+        run: npm run build:cloud
+      - name: Test the built connectors (HTTP and stdio) against a local relay
+        run: npm run test:built
+      - name: Check the Claude Desktop extension with the official mcpb tool
+        run: node scripts/validate-mcpb.mjs
       - name: End-to-end tests (iPhone sizes and desktop, against the production build)
         run: |
           npx playwright install --with-deps chromium

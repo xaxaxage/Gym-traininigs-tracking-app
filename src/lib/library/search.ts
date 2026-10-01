@@ -136,28 +136,39 @@ function boost(e: Exercise, opts: SearchOptions): number {
   return b;
 }
 
-/** Exercises matching the query, best first. An empty query lists everything that passes the filters. */
-export function searchExercises(all: Exercise[], query: string, opts: SearchOptions = {}): Exercise[] {
+export interface Scored {
+  exercise: Exercise;
+  score: number;
+  /** 3 = exact name, 2 = alias or every word in the name, 1 = only tags or part of a word. */
+  tier: number;
+}
+
+/** Exercises matching the query with how well they match, best first. */
+export function searchScored(all: Exercise[], query: string, opts: SearchOptions = {}): Scored[] {
   // Shorthand is tried both ways: "db row" is an alias as typed, "dumbbell row" as spelled out.
   const raw = words(query);
   const q = queryWords(query);
   const joined = q.join('');
   const rawJoined = raw.join('');
-  const scored: { e: Exercise; score: number }[] = [];
+  const scored: Scored[] = [];
   if (q.length === 0 && raw.length > 0) return [];
   for (const e of all) {
     if (!matchesFilters(e, opts)) continue;
     if (q.length === 0) {
-      scored.push({ e, score: boost(e, opts) });
+      scored.push({ exercise: e, score: boost(e, opts), tier: 0 });
       continue;
     }
     const ix = index(e);
     const text = Math.max(textScore(ix, q, joined), rawJoined === joined ? 0 : textScore(ix, raw, rawJoined));
-    if (text > 0) scored.push({ e, score: text + boost(e, opts) });
+    if (text > 0) scored.push({ exercise: e, score: text + boost(e, opts), tier: Math.floor(text / 1000) });
   }
-  scored.sort((a, b) => b.score - a.score || a.e.name.localeCompare(b.e.name, 'en'));
-  const out = scored.map((s) => s.e);
-  return opts.limit ? out.slice(0, opts.limit) : out;
+  scored.sort((a, b) => b.score - a.score || a.exercise.name.localeCompare(b.exercise.name, 'en'));
+  return opts.limit ? scored.slice(0, opts.limit) : scored;
+}
+
+/** Exercises matching the query, best first. An empty query lists everything that passes the filters. */
+export function searchExercises(all: Exercise[], query: string, opts: SearchOptions = {}): Exercise[] {
+  return searchScored(all, query, opts).map((s) => s.exercise);
 }
 
 /** Hidden exercises that match, for a "show hidden" hint under the results. */

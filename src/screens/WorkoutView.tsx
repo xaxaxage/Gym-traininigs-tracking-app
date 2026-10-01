@@ -11,7 +11,7 @@ import { fmtSet, plural } from '../lib/format';
 import { positionBetween, routineFromWorkout } from '../lib/workout';
 import { TopBar } from '../components/Common';
 import { Pencil, Trash, Trophy } from '../components/Icons';
-import { recordText } from './Summary';
+import { recordText } from '../lib/records';
 
 /** A finished workout, to look at; Edit opens it in the workout screen. */
 export function WorkoutView({ workout }: { workout: Workout }) {

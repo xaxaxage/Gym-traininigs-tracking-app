@@ -5,6 +5,7 @@ import { applyMerged, getData, subscribe } from '../store';
 import { buildParts, devicePartName, mergePart, parsePart, type DevicePart } from './parts';
 import { decryptText, deriveKeys, encryptText, normalizePhrase, partLabel, sha256, type SyncKeys } from './crypto';
 import { thisDevice } from './device';
+import { firstAccepted } from './wait';
 import {
   clearSyncConfig,
   DEFAULT_RELAYS,
@@ -87,15 +88,6 @@ function report(state: 'synced' | 'error' | 'offline' | 'syncing', message?: str
     lastSyncAt: config?.lastSyncAt,
     relaysOk: relaysOk(),
     relaysTotal: config?.relays.length ?? 0,
-  });
-}
-
-/** Resolves true as soon as one relay accepted the event, false when every one refused or timed out. */
-export function firstAccepted(sent: Promise<unknown>[]): Promise<boolean> {
-  return new Promise((resolve) => {
-    let left = sent.length;
-    if (left === 0) resolve(false);
-    for (const p of sent) p.then(() => resolve(true), () => --left === 0 && resolve(false));
   });
 }
 

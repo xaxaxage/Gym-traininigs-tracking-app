@@ -10,5 +10,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["vite.config.ts", "vite.mcp.config.ts", "vite.cloud.config.ts", "playwright.config.ts", "plugins", "data", "scripts", "e2e"]
+  "include": ["vite.config.ts", "vite.mcp.config.ts", "vite.cloud.config.ts", "vitest.built.config.ts", "playwright.config.ts", "plugins", "data", "scripts", "e2e"]
 }

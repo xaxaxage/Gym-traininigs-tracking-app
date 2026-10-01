@@ -1,11 +1,12 @@
 import { useMemo } from 'preact/hooks';
-import type { Units, Workout } from '../lib/types';
+import type { Workout } from '../lib/types';
 import { putRoutine, sortedRoutines, useData } from '../lib/store';
 import { clockTime, durationWords, shortDate } from '../lib/dates';
 import { navigate } from '../lib/router';
 import { showToast } from '../lib/toast';
-import { newRecords, workoutTotals, type NewRecord } from '../lib/stats';
-import { fmtDistance, distanceUnit, fmtDuration, fmtVolume, weightLabel } from '../lib/units';
+import { newRecords, workoutTotals } from '../lib/stats';
+import { recordText } from '../lib/records';
+import { fmtVolume } from '../lib/units';
 import { fmtSets, plural } from '../lib/format';
 import { positionBetween, routineFromWorkout } from '../lib/workout';
 import { useCountUp } from '../lib/motion';
@@ -116,26 +117,4 @@ export function Summary({ workout }: { workout: Workout }) {
       </div>
     </main>
   );
-}
-
-export function recordText(r: NewRecord, units: Units): string {
-  const was = (v: string) => ` (was ${v})`;
-  switch (r.kind) {
-    case 'e1rm':
-      return `Best estimated 1-rep max: ${weightLabel(r.value, units)}${was(weightLabel(r.previous, units))}`;
-    case 'heaviest':
-      return `Heaviest weight: ${weightLabel(r.value, units)}${was(weightLabel(r.previous, units))}`;
-    case 'volume':
-      return `Most volume in a workout: ${fmtVolume(r.value, units)}${was(fmtVolume(r.previous, units))}`;
-    case 'reps':
-      return `Most reps in a set: ${r.value}${was(String(r.previous))}`;
-    case 'repsAtWeight':
-      return `Most reps at ${weightLabel(r.weight, units)}: ${r.value}${was(String(r.previous))}`;
-    case 'longest':
-      return `Longest: ${fmtDuration(r.value)}${was(fmtDuration(r.previous))}`;
-    case 'farthest': {
-      const u = distanceUnit(r.logType, units);
-      return `Farthest: ${fmtDistance(r.value, r.logType, units)} ${u}${was(`${fmtDistance(r.previous, r.logType, units)} ${u}`)}`;
-    }
-  }
 }
