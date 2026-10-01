@@ -9,6 +9,7 @@ import { applyTheme } from './lib/theme';
 import { watchMotion } from './lib/motion';
 import { keepScreenOn } from './lib/wakelock';
 import { registerServiceWorker } from './lib/updates';
+import { loadSyncConfig } from './lib/sync/state';
 
 // Keep the color palette in step with Settings.
 let shownTheme = '';
@@ -29,6 +30,11 @@ subscribe(awake);
 
 initRouter();
 render(<App />, document.getElementById('app')!);
+
+// Resume device sync if this device has a sync key (the sync code loads only then).
+if (loadSyncConfig()) {
+  import('./lib/sync/engine').then((m) => m.startSync()).catch((err) => console.warn('Sync could not start', err));
+}
 
 // Ask the browser not to evict saved workouts when storage runs low.
 navigator.storage?.persist?.().catch(() => undefined);

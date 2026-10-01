@@ -1,4 +1,10 @@
-/** Appearance, sync and Claude settings (added in later steps). */
+import { SyncSettings } from './SyncSettings';
+
+/** Appearance, sync and Claude settings. */
 export function SettingsExtras() {
-  return null;
+  return (
+    <>
+      <SyncSettings />
+    </>
+  );
 }
