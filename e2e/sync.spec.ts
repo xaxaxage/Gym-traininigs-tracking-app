@@ -35,6 +35,8 @@ test('two devices: sync key, live updates, the workout in progress, devices and 
 
   // Phone: make a sync key.
   await phone.getByRole('button', { name: 'Create sync key' }).click();
+  // The words appear once the crypto code has loaded.
+  await expect(phone.locator('.words li')).toHaveCount(12);
   const words = (await phone.locator('.words li').allInnerTexts()).map((w) => w.trim());
   expect(words).toHaveLength(12);
   await phone.getByLabel("I've saved my sync key").check();
@@ -105,6 +107,7 @@ test('two devices: sync key, live updates, the workout in progress, devices and 
 
   // A new sync key: the phone moves to it, the laptop stops and asks for it.
   await phone.getByRole('button', { name: 'Change sync key' }).click();
+  await expect(phone.locator('.change-key .words li')).toHaveCount(12);
   const fresh = (await phone.locator('.change-key .words li').allInnerTexts()).map((w) => w.trim());
   await phone.getByLabel("I've saved the new key").check();
   await phone.getByRole('button', { name: 'Switch to the new key' }).click();

@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { goBack, navigate } from '../lib/router';
 import { dismissToast, useToast } from '../lib/toast';
 import { activeWorkout, useData } from '../lib/store';
@@ -139,7 +139,9 @@ export function Sheet({
   const [id] = useState(() => `sheet-${++sheetIds}`);
   const closing = useRef(onClose);
   closing.current = onClose;
-  useEffect(() => {
+  // In the same commit as the render: a plain effect waits for the next frame,
+  // and until then a closed sheet would still be modal and swallow taps and typing.
+  useLayoutEffect(() => {
     const d = ref.current;
     if (!d) return;
     if (open && !d.open) {

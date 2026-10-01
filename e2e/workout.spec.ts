@@ -5,6 +5,18 @@ const card = (page: Page, name: string) => page.locator('.exercise-card').filter
 const setRow = (page: Page, exercise: string, n: number) => card(page, exercise).locator('.set-row:not(.set-header)').nth(n - 1);
 const field = (page: Page, exercise: string, n: number, what: RegExp) => setRow(page, exercise, n).getByLabel(what);
 
+/**
+ * Moves the page's clock on, as if the phone sat idle in between. This sets
+ * the wall clock rather than using clock.fastForward: when the machine is
+ * busy, Playwright's own running clock can finish a timer pass after a
+ * fastForward and wind the time back to before it.
+ */
+async function later(page: Page, time: string) {
+  const [m, s] = time.split(':').map(Number);
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.setSystemTime(now + (m * 60 + s) * 1000);
+}
+
 async function makeRoutine(page: Page) {
   await page.getByRole('button', { name: 'Create a routine' }).click();
   await page.getByLabel('Name').fill('Push day');
@@ -43,7 +55,7 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await expect(setRow(page, 'Barbell Bench Press', 1)).toHaveClass(/done/);
   const timer = page.getByRole('timer');
   await expect(timer).toContainText('2:00');
-  await page.clock.fastForward('00:30');
+  await later(page, '00:30');
   await expect(timer).toContainText('1:30');
   await timer.getByRole('button', { name: '15 seconds more' }).click();
   await expect(timer).toContainText('1:45');
@@ -57,12 +69,13 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await setRow(page, 'Barbell Bench Press', 2).getByRole('button', { name: /Complete set 2/ }).click();
 
   // A reload (or a crash, or closing the app) loses nothing, and the timer is still right.
-  await page.clock.fastForward('00:20');
+  await later(page, '00:20');
   await page.reload();
   await expect(page.locator('.workout-name')).toHaveText('Push day');
   await expect(setRow(page, 'Barbell Bench Press', 2)).toHaveClass(/done/);
   await expect(field(page, 'Barbell Bench Press', 2, /weight/)).toHaveValue('62.5');
-  await expect(page.getByRole('timer')).toContainText('1:40');
+  // 2:00 − 0:20, less the second the reload itself may take on a busy machine.
+  await expect(page.getByRole('timer')).toContainText(/1:(40|39)/);
   await page.getByRole('timer').getByRole('button', { name: 'Skip' }).click();
   await expect(page.getByRole('timer')).toHaveCount(0);
 
@@ -76,7 +89,7 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await field(page, 'Dumbbell Lateral Raise', 1, /reps/).fill('12');
   await setRow(page, 'Dumbbell Lateral Raise', 1).getByRole('button', { name: /Complete set 1/ }).click();
 
-  await page.clock.fastForward('40:00');
+  await later(page, '40:00');
   await page.getByRole('button', { name: 'Finish' }).click();
   const sheet = page.getByRole('dialog', { name: 'Finish the workout?' });
   await expect(sheet).toContainText('3 sets not checked off are left out');
@@ -115,6 +128,30 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await page.getByRole('button', { name: 'Show the numbers' }).click();
   await expect(page.locator('.data-table').last()).toContainText('75.8');
   expect(errors).toEqual([]);
+});
+
+test('typing right after a sheet closes is not lost, even when frames are slow', async ({ page }) => {
+  // A busy phone (or CI machine) can take a while to paint the next frame.
+  await page.addInitScript(() => {
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (cb) => (setTimeout(() => raf(cb), 80), 0);
+  });
+  await fresh(page);
+  await page.getByRole('button', { name: 'Start an empty workout' }).click();
+  await page.getByRole('link', { name: 'Add exercises' }).click();
+  await page.getByLabel('Search exercises').fill('plank');
+  await page.locator('.exercise-row', { hasText: /^Plank/ }).first().click();
+  await page.getByLabel('Search exercises').fill('squat');
+  await page.locator('.exercise-row', { hasText: 'Barbell Squat' }).first().click();
+  await page.getByRole('button', { name: 'Add 2 exercises' }).click();
+  await card(page, 'Barbell Squat').getByRole('button', { name: /More for/ }).click();
+  await page.getByRole('button', { name: 'Reorder exercises' }).click();
+  await page.getByRole('button', { name: 'Move Barbell Squat up' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click();
+  const time = card(page, 'Plank').getByLabel('Set 1 time');
+  await time.fill('45');
+  await time.blur();
+  await expect(time).toHaveValue('0:45');
 });
 
 test('an empty workout: add, swap, reorder and remove exercises; notes; discard', async ({ page }) => {
