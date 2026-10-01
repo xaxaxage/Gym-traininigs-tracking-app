@@ -70,21 +70,26 @@ function index(e: Exercise): Indexed {
 /** Every query word starts some word of the target. */
 const allPrefix = (query: string[], target: string[]) => query.every((q) => target.some((t) => t.startsWith(q)));
 
+/**
+ * How well an exercise matches, as tier × 1000 + a score within the tier:
+ * 3 = the exact name; 2 = an exact alias, or every word in the name or an
+ * alias; 1 = only in its equipment or muscles, or inside a word; 0 = no match.
+ * Within a tier, your favorites and recent exercises outrank wording.
+ */
 function textScore(ix: Indexed, q: string[], joined: string): number {
-  if (ix.nameJoined === joined) return 1000;
+  if (ix.nameJoined === joined) return 3000;
   let best = 0;
   for (const a of ix.aliases) {
-    if (a.joined === joined) best = Math.max(best, 900);
-    else if (allPrefix(q, a.words)) best = Math.max(best, a.joined.startsWith(joined) ? 520 : 380);
+    if (a.joined === joined) best = Math.max(best, 2300);
+    else if (allPrefix(q, a.words)) best = Math.max(best, 2150);
   }
   if (allPrefix(q, ix.name)) {
-    // The name starts with the query ("bench" → "Bench Press …") beats a word deep inside it.
-    const starts = ix.name[0].startsWith(q[0]);
-    best = Math.max(best, (starts ? 640 : 460) - ix.name.length * 4);
-  } else if (joined.length >= 4 && ix.nameJoined.includes(joined)) {
-    best = Math.max(best, 300);
-  } else if (allPrefix(q, [...ix.name, ...ix.tags, ...ix.aliases.flatMap((a) => a.words)])) {
-    best = Math.max(best, 200 - ix.name.length * 2);
+    // The name starts with the query ("bench" → "Bench Dip") beats a word deep inside it.
+    best = Math.max(best, (ix.name[0].startsWith(q[0]) ? 2250 : 2200) - ix.name.length * 4);
+  } else if (best === 0 && joined.length >= 4 && ix.nameJoined.includes(joined)) {
+    best = 1150;
+  } else if (best === 0 && allPrefix(q, [...ix.name, ...ix.tags, ...ix.aliases.flatMap((a) => a.words)])) {
+    best = 1100 - ix.name.length * 2;
   }
   return best;
 }
@@ -120,12 +125,12 @@ export function matchesFilters(e: Exercise, opts: SearchOptions): boolean {
   return true;
 }
 
-/** Small nudges so, among equally good matches, the ones you use come first. */
+/** Within a match tier: favorites and recently done exercises first, then popular ones (at most 900, below a tier). */
 function boost(e: Exercise, opts: SearchOptions): number {
   let b = 0;
-  if (opts.favorites?.has(e.id)) b += 60;
+  if (opts.favorites?.has(e.id)) b += 250;
   const used = opts.recent?.get(e.id);
-  if (used) b += 50 + Math.max(0, 40 - (Date.now() - used) / (7 * 86_400_000));
+  if (used) b += 100 + 200 * Math.exp(-Math.max(0, Date.now() - used) / (21 * 86_400_000));
   if (e.popular) b += Math.max(0, 60 - e.popular / 3);
   if (e.custom) b += 20;
   return b;
@@ -133,16 +138,21 @@ function boost(e: Exercise, opts: SearchOptions): number {
 
 /** Exercises matching the query, best first. An empty query lists everything that passes the filters. */
 export function searchExercises(all: Exercise[], query: string, opts: SearchOptions = {}): Exercise[] {
+  // Shorthand is tried both ways: "db row" is an alias as typed, "dumbbell row" as spelled out.
+  const raw = words(query);
   const q = queryWords(query);
   const joined = q.join('');
+  const rawJoined = raw.join('');
   const scored: { e: Exercise; score: number }[] = [];
+  if (q.length === 0 && raw.length > 0) return [];
   for (const e of all) {
     if (!matchesFilters(e, opts)) continue;
     if (q.length === 0) {
       scored.push({ e, score: boost(e, opts) });
       continue;
     }
-    const text = textScore(index(e), q, joined);
+    const ix = index(e);
+    const text = Math.max(textScore(ix, q, joined), rawJoined === joined ? 0 : textScore(ix, raw, rawJoined));
     if (text > 0) scored.push({ e, score: text + boost(e, opts) });
   }
   scored.sort((a, b) => b.score - a.score || a.e.name.localeCompare(b.e.name, 'en'));
