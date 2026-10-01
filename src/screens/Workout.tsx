@@ -519,7 +519,7 @@ function SetRow({
             {prev}
           </button>
         ) : (
-          <span class="faint" aria-label="No previous set">
+          <span class="muted" aria-label="No previous set">
             –
           </span>
         )}

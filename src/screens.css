@@ -1588,3 +1588,90 @@ button.set-num {
   min-width: 0;
   height: var(--tap);
 }
+
+/* ── Appearance (ported from the calorie tracker) ─────────────────────── */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 10px;
+}
+.palette-option {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 6px;
+  border: 1.5px solid var(--line-control);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+}
+.palette-option[aria-checked='true'] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+.palette-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px 2px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.palette-name svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.swatch {
+  display: flex;
+  align-items: flex-end;
+  height: 52px;
+  padding: 10px 8px 0;
+  border-radius: 11px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.swatch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 7px 7px 0;
+  border-radius: 7px 7px 0 0;
+}
+.swatch-text {
+  width: 70%;
+  height: 4px;
+  border-radius: 2px;
+}
+.swatch-dots {
+  display: flex;
+  gap: 4px;
+}
+.swatch-dots i {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+}
+.swatch-dots i:first-child {
+  width: 22px;
+}
+.swatch-split {
+  position: relative;
+  display: block;
+  height: 52px;
+}
+.swatch-split .swatch {
+  position: absolute;
+  inset: 0;
+}
+/* Light palette on the left, dark on the right, split on a diagonal. */
+.swatch-split .swatch:last-child {
+  clip-path: polygon(64% 0, 100% 0, 100% 100%, 36% 100%);
+}

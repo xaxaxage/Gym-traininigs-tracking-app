@@ -225,10 +225,11 @@ export function deriveTokens(input: ThemeBase): Tokens {
   const success = ensureContrast(dark ? '#4cc36e' : '#2f8a4a', surface, 3);
   const successSoft = mix(surface, success, 0.16);
 
+  const sunken = ground(dark ? 0.08 : 0.05);
   return {
     bg,
     surface,
-    sunken: ground(dark ? 0.08 : 0.05),
+    sunken,
     // Round buttons sit on cards; in the dark they need a visibly lighter circle.
     quiet: dark ? shade(0.1) : ground(0.03),
     line: shade(dark ? 0.12 : 0.08),
@@ -237,7 +238,8 @@ export function deriveTokens(input: ThemeBase): Tokens {
     divider: shade(dark ? 0.08 : 0.05),
     ink,
     'ink-2': ensureContrast(mix(ink, surface, 0.18), surface, 7),
-    muted: readable(mix(ink, surface, 0.38), 4.6),
+    // Muted text sits on cards, the page and sunken panels.
+    muted: ensureContrast(readable(mix(ink, surface, 0.38), 4.6), sunken, 4.6),
     faint: ensureContrast(mix(ink, surface, 0.55), surface, 2.4),
     disabled: mix(ink, surface, 0.66),
     'on-ink': textOn(ink),
