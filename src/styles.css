@@ -424,7 +424,7 @@ input[type='search']::-webkit-search-cancel-button {
   gap: 10px;
 }
 .pill {
-  min-height: 40px;
+  min-height: var(--tap);
   padding: 0 14px;
   border-radius: var(--r-pill);
   font-size: 14px;
@@ -644,7 +644,7 @@ a.row {
   border-radius: var(--r-md);
 }
 .segmented button {
-  min-height: 40px;
+  min-height: var(--tap);
   border: none;
   border-radius: var(--r-sm);
   font-size: 14px;

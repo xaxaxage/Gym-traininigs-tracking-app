@@ -179,7 +179,7 @@
   font-weight: 700;
 }
 .segmented.small button {
-  min-height: 36px;
+  min-height: var(--tap);
   font-size: 13px;
   padding: 0 10px;
 }
@@ -554,20 +554,26 @@ dialog.sheet::backdrop {
   font-size: 18px;
   font-weight: 700;
   color: var(--primary);
-  padding-top: 9px;
   min-width: 0;
   line-height: 1.2;
 }
+h2.exercise-name:not(:has(a)) {
+  padding-top: 11px;
+}
 .exercise-name a {
   color: inherit;
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 2px 0;
 }
 .rest-chip {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: var(--tap);
+  padding: 0 14px;
   margin-left: 2px;
   border-radius: var(--r-pill);
   border: none;
@@ -589,7 +595,7 @@ dialog.sheet::backdrop {
 }
 .set-row {
   display: grid;
-  grid-template-columns: 30px minmax(52px, 1fr) minmax(60px, 80px) minmax(52px, 68px) var(--tap-big);
+  grid-template-columns: var(--tap) minmax(40px, 1fr) minmax(60px, 78px) minmax(52px, 66px) var(--tap-big);
   gap: 6px;
   align-items: center;
   padding: 2px;
@@ -597,7 +603,7 @@ dialog.sheet::backdrop {
   min-width: 0;
 }
 .fields-1 .set-row {
-  grid-template-columns: 34px minmax(52px, 1fr) minmax(84px, 124px) var(--tap-big);
+  grid-template-columns: var(--tap) minmax(52px, 1fr) minmax(84px, 124px) var(--tap-big);
 }
 .set-header {
   font-size: 11px;
@@ -622,7 +628,7 @@ dialog.sheet::backdrop {
   background: var(--success-soft);
 }
 .set-num {
-  width: 34px;
+  width: var(--tap);
   height: 40px;
   border-radius: 10px;
   border: none;
@@ -724,14 +730,25 @@ button.set-num {
     display: none;
   }
   .set-row {
-    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) var(--tap-big);
+    grid-template-columns: var(--tap) minmax(0, 1fr) minmax(0, 1fr) var(--tap);
     gap: 4px;
   }
   .fields-1 .set-row {
-    grid-template-columns: 28px minmax(0, 1fr) var(--tap-big);
+    grid-template-columns: var(--tap) minmax(0, 1fr) var(--tap);
   }
-  .set-num {
-    width: 28px;
+  .check-btn {
+    width: var(--tap);
+  }
+  /* Room for "183.75" in a 280 px window. */
+  .num-input {
+    padding: 0 2px;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+  }
+}
+@media (max-width: 340px) {
+  .exercise-card {
+    padding-inline: 8px;
   }
 }
 .add-set {
@@ -1025,7 +1042,6 @@ button.set-num {
 }
 .chip-row .pill {
   flex-shrink: 0;
-  min-height: 40px;
 }
 .pill.has-filter {
   border-color: var(--primary);
@@ -1342,7 +1358,7 @@ button.set-num {
 .calendar-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: 2px;
 }
 .calendar-wd {
   text-align: center;
@@ -1358,10 +1374,10 @@ button.set-num {
 }
 .calendar-day {
   width: 100%;
-  max-width: 46px;
-  aspect-ratio: 1;
-  min-height: 36px;
-  border-radius: 50%;
+  max-width: 48px;
+  min-width: var(--tap);
+  height: var(--tap);
+  border-radius: 22px;
   border: none;
   background: none;
   font-weight: 600;
@@ -1674,4 +1690,10 @@ button.set-num {
 /* Light palette on the left, dark on the right, split on a diagonal. */
 .swatch-split .swatch:last-child {
   clip-path: polygon(64% 0, 100% 0, 100% 100%, 36% 100%);
+}
+@media (max-width: 359px) {
+  /* Seven days must fit side by side: below 360 px they narrow (still at least 28 px) instead of overlapping. */
+  .calendar-day {
+    min-width: 0;
+  }
 }

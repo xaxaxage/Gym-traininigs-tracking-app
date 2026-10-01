@@ -25,6 +25,24 @@ test('every screen fits from 1440 px down to 280 px, without sideways scrolling'
   expect(errors).toEqual([]);
 });
 
+test('weights and reps are never cut off, down to 280 px', async ({ page }) => {
+  await fresh(page);
+  await page.getByRole('button', { name: 'Start an empty workout' }).click();
+  await page.getByRole('link', { name: 'Add exercises' }).click();
+  await page.locator('.exercise-row', { hasText: 'Barbell Bench Press' }).first().click();
+  await page.getByRole('button', { name: /Add 1/ }).click();
+  const weight = page.getByRole('textbox', { name: 'Set 1 weight in kg' });
+  await weight.fill('183.75');
+  await page.getByRole('textbox', { name: 'Set 1 reps' }).fill('12');
+  for (const width of WIDTHS) {
+    await page.setViewportSize({ width, height: 800 });
+    const clipped = await page.$$eval('.num-input', (els) =>
+      els.filter((e) => (e as HTMLInputElement).value && e.scrollWidth > e.clientWidth).map((e) => (e as HTMLInputElement).value),
+    );
+    expect(clipped, `cut off at ${width}px`).toEqual([]);
+  }
+});
+
 test('works with the keyboard: visible focus and labelled controls @desktop', async ({ page }) => {
   await fresh(page);
   await page.keyboard.press('Tab');

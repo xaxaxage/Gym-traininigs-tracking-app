@@ -30,6 +30,20 @@ export async function noSidewaysScroll(page: Page, label: string) {
     client: document.documentElement.clientWidth,
   }));
   expect(scroll, `${label}: page is ${scroll}px wide in a ${client}px window`).toBeLessThanOrEqual(client);
+  // The page clips sideways overflow, so also look for anything that would be cut off at the edges
+  // (except inside the rows that scroll sideways on purpose).
+  const out = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const bad: string[] = [];
+    for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+      if (el.closest('.chip-row, .table-wrap, dialog:not([open]), .sr-only, svg') || el.offsetParent === null) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      if (r.right > width + 1 || r.left < -1) bad.push(`${el.tagName.toLowerCase()}.${el.className} (${Math.round(r.left)}–${Math.round(r.right)})`);
+    }
+    return bad.slice(0, 5);
+  });
+  expect(out, `${label}: sticks out of the window`).toEqual([]);
 }
 
 /** Start from an empty app. */
