@@ -6,6 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
  * Nothing here talks to the internet: exercise photos and sync relays are
  * stubbed or run locally.
  */
+// Lets context.route() see the service worker's own requests (for the offline photo test).
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
+
 const iPhone = { ...devices['iPhone 13'], defaultBrowserType: 'chromium' as const };
 
 export default defineConfig({

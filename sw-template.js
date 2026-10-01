@@ -28,7 +28,9 @@ self.addEventListener('activate', (event) => {
         .sort()
         .reverse();
       return Promise.all(old.slice(1).map((k) => caches.delete(k)));
-    }),
+    })
+      // Take over the open page straight away, so even a first visit has the exercise list offline.
+      .then(() => self.clients.claim()),
   );
 });
 
