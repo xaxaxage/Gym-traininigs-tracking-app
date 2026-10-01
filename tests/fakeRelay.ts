@@ -54,6 +54,11 @@ export function startRelay() {
     port: () => (server.address() as AddressInfo).port,
     events,
     refuse: (on: boolean) => (refuse = on),
-    close: () => new Promise((r) => server.close(r)),
+    /** Ends open connections too: the server waits for them otherwise (say, a failed test's browsers). */
+    close: () =>
+      new Promise((r) => {
+        for (const c of server.clients) c.terminate();
+        server.close(r);
+      }),
   };
 }
