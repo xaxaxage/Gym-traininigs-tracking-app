@@ -1,0 +1,184 @@
+/* ── Motion ───────────────────────────────────────────────────────────────
+   Small, quick movements that show what changed (ported from the calorie
+   tracker). Everything here is switched off by <html data-motion="off">
+   (Settings → Appearance → Animations, or the system's Reduce Motion),
+   except the loading spinner. */
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop {
+  40% {
+    transform: scale(1.22);
+  }
+}
+@keyframes lift {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes done-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--success) 35%, transparent);
+  }
+}
+@keyframes rest-pulse {
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+/* Screens fade in and their blocks rise into place one after another. */
+.screen {
+  animation: screen-in 0.2s ease-out backwards;
+}
+.screen > * {
+  animation: rise 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.screen > :nth-child(2) {
+  animation-delay: 0.03s;
+}
+.screen > :nth-child(3) {
+  animation-delay: 0.06s;
+}
+.screen > :nth-child(4) {
+  animation-delay: 0.09s;
+}
+.screen > :nth-child(5) {
+  animation-delay: 0.12s;
+}
+.screen > :nth-child(n + 6) {
+  animation-delay: 0.15s;
+}
+/* The sticky bars must not move (a transform would also unstick them while it runs). */
+.screen > .workout-head,
+.screen > .library-tools {
+  animation: none;
+}
+.footer {
+  animation: lift 0.36s 0.08s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.mini-bar,
+.rest-bar .rest-inner {
+  animation: lift 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.1) backwards;
+}
+.rest-bar.over .rest-inner {
+  animation: rest-pulse 1.2s ease-in-out 3;
+}
+
+/* Sheets rise from the bottom. */
+dialog.sheet[open] {
+  animation: sheet-up 0.26s cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+}
+dialog.sheet[open]::backdrop {
+  animation: backdrop-in 0.2s ease-out backwards;
+}
+
+/* Press feedback: controls give a little under the finger. */
+.btn-primary,
+.btn-secondary,
+.btn-accent,
+.icon-btn,
+.pill,
+.check-btn,
+.add-set,
+.rest-btn,
+.rest-chip,
+.sheet-action,
+.segmented button,
+.calendar-day,
+.palette-option,
+.prev-btn {
+  transition:
+    transform 0.14s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+:is(
+    .btn-primary,
+    .btn-secondary,
+    .btn-accent,
+    .icon-btn,
+    .pill,
+    .check-btn,
+    .add-set,
+    .rest-btn,
+    .rest-chip,
+    .sheet-action,
+    .segmented button,
+    .calendar-day,
+    .palette-option
+  ):active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* A set checked off: the tick pops and the row flashes green once. */
+.check-btn.on svg,
+.icon-btn.on svg,
+.palette-option[aria-checked='true'] .palette-name svg {
+  animation: pop 0.38s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.set-row.done {
+  animation: done-flash 0.6s ease-out;
+}
+.set-row {
+  transition: background-color 0.25s ease;
+}
+
+/* New exercises, routines and list rows slide in. */
+.exercise-card,
+.routine-card {
+  animation: rise 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.exercise-list li,
+.records-list li {
+  animation: fade 0.22s ease-out backwards;
+}
+.toast {
+  animation: rise 0.34s cubic-bezier(0.2, 1.4, 0.4, 1) backwards;
+}
+
+/* Changing palette fades between colors instead of flashing. */
+body,
+.card,
+.list {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* ── Off switch ─────────────────────────────────────────────────────────── */
+html[data-motion='off'] *:not(.spinner),
+html[data-motion='off'] *::before,
+html[data-motion='off'] *::after,
+html[data-motion='off'] dialog::backdrop {
+  animation: none !important;
+  transition: none !important;
+}

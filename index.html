@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#F7F3EE" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="Log your gym workouts: routines, sets and reps, a rest timer, records and progress. Works offline; your data stays on your devices." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Gym" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <title>Gym Tracker</title>
+    <script>
+      // Apply the saved color palette before the app loads (see src/lib/theme.ts).
+      try {
+        var t = JSON.parse(localStorage.getItem('gym-tracker:theme') || 'null');
+        if (t && typeof t.css === 'string') {
+          var s = document.createElement('style');
+          s.id = 'theme-vars';
+          s.textContent = t.css;
+          document.head.appendChild(s);
+          var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', t.bar[dark ? 1 : 0]);
+          document.querySelector('meta[name="color-scheme"]').setAttribute('content', t.scheme);
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>This app needs JavaScript turned on.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
