@@ -9,7 +9,7 @@ import { fmtDuration } from '../lib/units';
 import { plural } from '../lib/format';
 import { scrollToPending } from '../lib/scroll';
 import { NumberInput, unitFor } from '../components/NumberInput';
-import { Sheet, SheetAction, TopBar } from '../components/Common';
+import { ActionGroup, Sheet, SheetAction, TopBar } from '../components/Common';
 import { ArrowDown, ArrowUp, Minus, More, Note, Play, Plus, Swap, Timer, Trash } from '../components/Icons';
 
 const REST_CHOICES = [0, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300];
@@ -43,7 +43,25 @@ export function RoutineEditor({ routine }: { routine: Routine }) {
   return (
     <>
       <main class="screen with-footer routine-editor">
-        <TopBar title={isNew ? 'New routine' : 'Edit routine'} onBack={leave} />
+        <TopBar
+          title={isNew ? 'New routine' : 'Edit routine'}
+          onBack={leave}
+          right={
+            <button
+              type="button"
+              class="icon-btn"
+              aria-label="Delete routine"
+              onClick={() => {
+                const r = latest();
+                deleteRoutine(r.id);
+                showToast(`Deleted “${r.name}”`, { label: 'Undo', run: () => putRoutine(r) }, { carry: true });
+                goBack('/');
+              }}
+            >
+              <Trash />
+            </button>
+          }
+        />
 
         <div class="field">
           <label for="routine-name" class="field-label">
@@ -64,8 +82,11 @@ export function RoutineEditor({ routine }: { routine: Routine }) {
         </div>
 
         {routine.exercises.length === 0 && (
-          <div class="card">
-            <p class="body-text center">Add the exercises in the order you do them. You can set the sets, reps and weights for each.</p>
+          <div class="empty-workout">
+            <span class="empty-icon" aria-hidden="true">
+              <Plus size={26} />
+            </span>
+            <p class="body-text center">Add the exercises in the order you do them, then set the sets, reps and weights you aim for.</p>
           </div>
         )}
 
@@ -81,17 +102,21 @@ export function RoutineEditor({ routine }: { routine: Routine }) {
             onChange={changeExercise}
             onMenu={() => setMenu(e)}
             onRest={() => setRestFor(e)}
+            onNote={() => {
+              setNotes(new Set([...notes, e.id]));
+              requestAnimationFrame(() => document.getElementById(`rnote-${e.id}`)?.focus());
+            }}
           />
         ))}
 
-        <button type="button" class="btn-secondary add-exercises" onClick={() => pick()}>
+        <button type="button" class="btn-tonal add-exercises" onClick={() => pick()}>
           <Plus />
           Add exercises
         </button>
 
         <div class="field">
           <label for="routine-notes" class="field-label">
-            Notes <span class="optional">(optional)</span>
+            Notes
           </label>
           <textarea
             id="routine-notes"
@@ -103,19 +128,6 @@ export function RoutineEditor({ routine }: { routine: Routine }) {
           />
         </div>
 
-        <button
-          type="button"
-          class="link-btn left danger"
-          onClick={() => {
-            const r = latest();
-            deleteRoutine(r.id);
-            showToast(`Deleted “${r.name}”`, { label: 'Undo', run: () => putRoutine(r) }, { carry: true });
-            goBack('/');
-          }}
-        >
-          <Trash size={18} />
-          Delete routine
-        </button>
       </main>
 
       <div class="footer">
@@ -135,34 +147,36 @@ export function RoutineEditor({ routine }: { routine: Routine }) {
       <Sheet open={!!menu} onClose={() => setMenu(null)} title={menu?.name ?? ''}>
         {menu && (
           <>
-            {index(menu) > 0 && (
+            <ActionGroup>
+              {index(menu) > 0 && (
+                <SheetAction
+                  icon={<ArrowUp />}
+                  label="Move up"
+                  onClick={() => (save({ exercises: moveItem(latest().exercises, index(menu), -1) }), setMenu(null))}
+                />
+              )}
+              {index(menu) < latest().exercises.length - 1 && (
+                <SheetAction
+                  icon={<ArrowDown />}
+                  label="Move down"
+                  onClick={() => (save({ exercises: moveItem(latest().exercises, index(menu), 1) }), setMenu(null))}
+                />
+              )}
+              <SheetAction icon={<Swap />} label="Swap for another exercise" chevron onClick={() => (setMenu(null), pick(menu.id))} />
+            </ActionGroup>
+            <ActionGroup>
               <SheetAction
-                icon={<ArrowUp />}
-                label="Move up"
-                onClick={() => (save({ exercises: moveItem(latest().exercises, index(menu), -1) }), setMenu(null))}
+                icon={<Trash />}
+                label="Remove from routine"
+                danger
+                onClick={() => {
+                  const before = latest().exercises;
+                  save({ exercises: before.filter((x) => x.id !== menu.id) });
+                  setMenu(null);
+                  showToast(`Removed ${menu.name}`, { label: 'Undo', run: () => save({ exercises: before }) });
+                }}
               />
-            )}
-            {index(menu) < latest().exercises.length - 1 && (
-              <SheetAction
-                icon={<ArrowDown />}
-                label="Move down"
-                onClick={() => (save({ exercises: moveItem(latest().exercises, index(menu), 1) }), setMenu(null))}
-              />
-            )}
-            <SheetAction icon={<Note />} label={menu.notes ? 'Edit note' : 'Add a note'} onClick={() => (setNotes(new Set([...notes, menu.id])), setMenu(null))} />
-            <SheetAction icon={<Timer />} label="Rest time" onClick={() => (setRestFor(menu), setMenu(null))} />
-            <SheetAction icon={<Swap />} label="Swap for another exercise" onClick={() => (setMenu(null), pick(menu.id))} />
-            <SheetAction
-              icon={<Trash />}
-              label="Remove from routine"
-              danger
-              onClick={() => {
-                const before = latest().exercises;
-                save({ exercises: before.filter((x) => x.id !== menu.id) });
-                setMenu(null);
-                showToast(`Removed ${menu.name}`, { label: 'Undo', run: () => save({ exercises: before }) });
-              }}
-            />
+            </ActionGroup>
           </>
         )}
       </Sheet>
@@ -214,6 +228,7 @@ function RoutineExerciseCard({
   onChange,
   onMenu,
   onRest,
+  onNote,
 }: {
   e: RoutineExercise;
   index: number;
@@ -224,6 +239,7 @@ function RoutineExerciseCard({
   onChange: (e: RoutineExercise) => void;
   onMenu: () => void;
   onRest: () => void;
+  onNote: () => void;
 }) {
   const fields = fieldsFor(e.logType);
   const setSet = (i: number, s: PlannedSet) => onChange({ ...e, sets: e.sets.map((x, j) => (j === i ? s : x)) });
@@ -234,17 +250,26 @@ function RoutineExerciseCard({
           <span class="sr-only">{index + 1}. </span>
           {e.name}
         </h2>
-        <button type="button" class="icon-btn plain ink" aria-label={`More for ${e.name}`} onClick={onMenu}>
+        <button type="button" class="icon-btn" aria-label={`More for ${e.name}`} onClick={onMenu}>
           <More />
         </button>
       </div>
-      <button type="button" class="rest-chip" onClick={onRest}>
-        <Timer size={16} />
-        {rest > 0 ? `Rest ${fmtDuration(rest)}` : 'No rest timer'}
-        {restIsDefault ? ' (default)' : ''}
-      </button>
+      <div class="exercise-tools">
+        <button type="button" class="tool-btn" onClick={onRest} aria-label={`Rest ${rest > 0 ? fmtDuration(rest) : 'off'}${restIsDefault ? ' (default)' : ''}. Change`}>
+          <Timer size={16} />
+          {rest > 0 ? fmtDuration(rest) : 'No rest'}
+          {restIsDefault ? ' · default' : ''}
+        </button>
+        {!showNotes && (
+          <button type="button" class="tool-btn" onClick={onNote} aria-label={`Add a note for ${e.name}`}>
+            <Note size={16} />
+            Note
+          </button>
+        )}
+      </div>
       {showNotes && (
         <textarea
+          id={`rnote-${e.id}`}
           class="input textarea exercise-note"
           rows={1}
           aria-label={`Notes for ${e.name}`}
@@ -258,7 +283,7 @@ function RoutineExerciseCard({
           <span role="columnheader">Set</span>
           {fields.map((f) => (
             <span role="columnheader">
-              {unitFor(f, units, e.logType)} <span class="optional">target</span>
+              {unitFor(f, units, e.logType)}
             </span>
           ))}
         </div>

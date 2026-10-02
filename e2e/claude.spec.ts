@@ -13,7 +13,7 @@ test('Use with Claude: my connector address, the Desktop extension, and my own s
   });
 
   // Without sync, it says to turn it on first.
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/claude');
   await expect(page.getByText(/Turn on Sync between devices first/)).toBeVisible();
 
   // With sync on (here: a relay that can't be reached, so nothing leaves the test).

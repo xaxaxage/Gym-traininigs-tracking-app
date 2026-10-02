@@ -18,8 +18,8 @@ import { workoutTotals } from '../lib/stats';
 import { fmtVolume } from '../lib/units';
 import { STARTER_PACKS, starterRoutines } from '../lib/starters';
 import { plural } from '../lib/format';
-import { BottomNav, Empty, Sheet, SheetAction, useElapsed } from '../components/Common';
-import { ArrowDown, ArrowUp, Copy, Dumbbell, Gear, More, Pencil, Play, Plus, Trash } from '../components/Icons';
+import { ActionGroup, BottomNav, Empty, Sheet, SheetAction, useElapsed } from '../components/Common';
+import { ArrowDown, ArrowUp, Check, ChevronRight, Copy, Dumbbell, Gear, More, Pencil, Play, Plus, Trash } from '../components/Icons';
 
 /** Where to begin: the workout in progress, or a routine, or an empty workout. */
 export function Train() {
@@ -51,19 +51,27 @@ export function Train() {
             <span class="eyebrow">{longDate(today)}</span>
             <h1 class="page-title">Train</h1>
           </div>
-          <a href="#/settings" class="icon-btn" aria-label="Settings">
+          <a href="#/settings" class="icon-btn filled" aria-label="Settings">
             <Gear />
           </a>
         </header>
 
-        {active ? <ActiveCard workout={active} /> : (
-          <button type="button" class="btn-accent start-empty" onClick={() => begin()}>
-            <Play size={18} />
-            Start an empty workout
-          </button>
-        )}
+        {active && <ActiveCard workout={active} />}
 
         <WeekStrip workouts={finished} today={today} />
+
+        {!active && (
+          <button type="button" class="quick-start" aria-label="Start an empty workout" onClick={() => begin()}>
+            <span class="quick-start-icon" aria-hidden="true">
+              <Plus size={22} />
+            </span>
+            <span class="row-main">
+              <span class="row-title">Start an empty workout</span>
+              <span class="row-sub">Add exercises as you go</span>
+            </span>
+            <ChevronRight />
+          </button>
+        )}
 
         <section class="stack-12" aria-labelledby="routines-title">
           <div class="section-head">
@@ -71,26 +79,23 @@ export function Train() {
               Routines
             </h2>
             {routines.length > 0 && (
-              <button type="button" class="link-btn" onClick={newOne}>
+              <button type="button" class="link-btn" onClick={newOne} aria-label="New routine">
                 <Plus size={18} />
-                New routine
+                New
               </button>
             )}
           </div>
 
           {routines.length === 0 ? (
             <div class="card">
-              <Empty title="Plan your workouts" icon={<Dumbbell size={28} />}>
-                <p class="body-text center">
-                  A routine is a list of exercises with their sets. Start one with a tap, and last time's weights are filled
-                  in for you.
-                </p>
-                <div class="button-pair">
-                  <button type="button" class="btn-secondary" onClick={() => setStarters(true)}>
-                    Use a starter plan
-                  </button>
+              <Empty title="Plan your workouts" icon={<Dumbbell size={26} />}>
+                <p class="body-text center">Save the exercises you do as a routine. Start it with one tap — last time's weights are filled in.</p>
+                <div class="stack-8">
                   <button type="button" class="btn-primary" onClick={newOne}>
                     Create a routine
+                  </button>
+                  <button type="button" class="btn-tonal" onClick={() => setStarters(true)}>
+                    Use a starter plan
                   </button>
                 </div>
               </Empty>
@@ -103,37 +108,32 @@ export function Train() {
             </ul>
           )}
           {routines.length > 0 && (
-            <button type="button" class="link-btn left" onClick={() => setStarters(true)}>
+            <button type="button" class="link-btn left muted" onClick={() => setStarters(true)}>
+              <Plus size={16} />
               Add a starter plan
             </button>
           )}
         </section>
 
-        {data.workouts.length === 0 && (
-          <div class="notice info plain">
-            <span>
-              Everything you log stays on this device. To use it on your other devices too, turn on{' '}
-              <a href="#/settings">sync in Settings</a> — no account needed.
-            </span>
-          </div>
-        )}
       </main>
       <BottomNav current="train" />
 
       <Sheet open={starters} onClose={() => setStarters(false)} title="Starter plans">
-        <p class="body-text">Ready-made routines with common exercises. Change them however you like afterwards.</p>
-        {STARTER_PACKS.map((pack) => (
-          <SheetAction
-            label={pack.name}
-            hint={`${pack.routines.map((r) => r.name).join(', ')} — ${pack.description}`}
-            onClick={() => {
-              const last = routines[routines.length - 1]?.position ?? 0;
-              putRoutines(starterRoutines(pack, last));
-              setStarters(false);
-              showToast(`Added ${pack.routines.length} routines`);
-            }}
-          />
-        ))}
+        <p class="field-hint">Ready-made routines to start from. Change them however you like.</p>
+        <ActionGroup>
+          {STARTER_PACKS.map((pack) => (
+            <SheetAction
+              label={pack.name}
+              hint={`${pack.routines.map((r) => r.name).join(', ')} — ${pack.description}`}
+              onClick={() => {
+                const last = routines[routines.length - 1]?.position ?? 0;
+                putRoutines(starterRoutines(pack, last));
+                setStarters(false);
+                showToast(`Added ${pack.routines.length} routines`);
+              }}
+            />
+          ))}
+        </ActionGroup>
       </Sheet>
 
       <RoutineMenu routine={menu} routines={routines} onClose={() => setMenu(null)} />
@@ -142,29 +142,35 @@ export function Train() {
         {active && (
           <>
             <p class="body-text">
-              <strong>{active.name}</strong> is still going ({doneSetCount(active)} sets done). What should happen to it?
+              <strong>{active.name}</strong> is still going ({plural(doneSetCount(active), 'set')} done).
             </p>
-            <SheetAction label="Go back to it" onClick={() => (setBusy(null), navigate('/workout'))} />
-            <SheetAction
-              label="Finish it, then start"
-              hint="It's saved to your history."
-              onClick={() => {
-                const next = busy;
-                setBusy(null);
-                finishActive();
-                startWorkout(next === 'empty' || !next ? undefined : next);
-              }}
-            />
-            <SheetAction
-              label="Discard it, then start"
-              danger
-              onClick={() => {
-                const next = busy;
-                setBusy(null);
-                discardActive({ undo: false });
-                startWorkout(next === 'empty' || !next ? undefined : next);
-              }}
-            />
+            <ActionGroup>
+              <SheetAction icon={<Play size={20} />} label="Go back to it" onClick={() => (setBusy(null), navigate('/workout'))} />
+              <SheetAction
+                icon={<Check />}
+                label="Finish it, then start"
+                hint="It's saved to your history."
+                onClick={() => {
+                  const next = busy;
+                  setBusy(null);
+                  finishActive();
+                  startWorkout(next === 'empty' || !next ? undefined : next);
+                }}
+              />
+            </ActionGroup>
+            <ActionGroup>
+              <SheetAction
+                icon={<Trash />}
+                label="Discard it, then start"
+                danger
+                onClick={() => {
+                  const next = busy;
+                  setBusy(null);
+                  discardActive({ undo: false });
+                  startWorkout(next === 'empty' || !next ? undefined : next);
+                }}
+              />
+            </ActionGroup>
           </>
         )}
       </Sheet>
@@ -178,17 +184,19 @@ function ActiveCard({ workout }: { workout: Workout }) {
   const sets = doneSetCount(workout);
   return (
     <section class="card active-card" aria-labelledby="active-title">
-      <span class="eyebrow accent">{stale ? `Still open from ${shortDate(workout.date)}` : 'In progress'}</span>
+      <div class="active-top">
+        <span class={`live-dot${stale ? ' stale' : ''}`} aria-hidden="true" />
+        <span class="eyebrow">{stale ? `Still open from ${shortDate(workout.date)}` : 'In progress'}</span>
+      </div>
       <h2 id="active-title" class="active-name">
         {workout.name}
       </h2>
-      <p class="muted num">
-        {stale ? `Last change ${durationWords(Date.now() - workout.updatedAt)} ago` : stopwatch(elapsed)} · {sets}{' '}
-        {sets === 1 ? 'set' : 'sets'} done
+      <p class="active-meta num">
+        {stale ? `Last change ${durationWords(Date.now() - workout.updatedAt)} ago` : stopwatch(elapsed)} · {plural(sets, 'set')} done
       </p>
       <div class="button-pair">
         {stale && (
-          <button type="button" class="btn-secondary" onClick={() => finishActive()}>
+          <button type="button" class="btn-tonal" onClick={() => finishActive()}>
             Finish it
           </button>
         )}
@@ -231,9 +239,9 @@ function WeekStrip({ workouts, today }: { workouts: Workout[]; today: string }) 
 }
 
 function ago(date: string, today: string): string {
-  if (date === today) return 'today';
+  if (date === today) return 'done today';
   const t = relativeDayTitle(date, today);
-  return t === 'Yesterday' ? 'yesterday' : `on ${shortDate(date)}`;
+  return t === 'Yesterday' ? 'done yesterday' : `done ${shortDate(date)}`;
 }
 
 function RoutineCard({
@@ -248,7 +256,7 @@ function RoutineCard({
   onMenu: () => void;
 }) {
   const last = workouts.find((w) => w.routineId === routine.id);
-  const names = routine.exercises.map((e) => e.name).join(', ');
+  const names = routine.exercises.map((e) => e.name).join(' · ');
   const sets = routine.exercises.reduce((n, e) => n + e.sets.length, 0);
   return (
     <li class="card routine-card">
@@ -257,17 +265,17 @@ function RoutineCard({
           <h3 class="routine-name">{routine.name}</h3>
           <p class="routine-exercises">{names || 'No exercises yet'}</p>
         </a>
-        <button type="button" class="icon-btn plain ink" aria-label={`More for ${routine.name}`} onClick={onMenu}>
+        <button type="button" class="icon-btn" aria-label={`More for ${routine.name}`} onClick={onMenu}>
           <More />
         </button>
       </div>
       <div class="routine-actions">
-        <p class="muted small-text">
-          {routine.exercises.length} {routine.exercises.length === 1 ? 'exercise' : 'exercises'} · {sets} sets
-          {last ? ` · last done ${ago(last.date, todayKey())}` : ''}
+        <p class="routine-meta">
+          {plural(routine.exercises.length, 'exercise')} · {plural(sets, 'set')}
+          {last && <span class="routine-last"> · {ago(last.date, todayKey())}</span>}
         </p>
-        <button type="button" class="btn-primary btn-small" onClick={onStart} aria-label={`Start ${routine.name}`} disabled={routine.exercises.length === 0}>
-          <Play size={16} />
+        <button type="button" class="btn-tonal btn-small" onClick={onStart} aria-label={`Start ${routine.name}`} disabled={routine.exercises.length === 0}>
+          <Play size={15} />
           Start
         </button>
       </div>
@@ -288,28 +296,32 @@ function RoutineMenu({ routine, routines, onClose }: { routine: Routine | null; 
     <Sheet open={!!routine} onClose={onClose} title={routine?.name ?? ''}>
       {routine && (
         <>
-          <SheetAction icon={<Pencil />} label="Edit" onClick={() => (onClose(), navigate(`/routine/${routine.id}`))} />
-          <SheetAction
-            icon={<Copy size={20} />}
-            label="Duplicate"
-            onClick={() => {
-              const copy = putRoutine(duplicateRoutine(routine, positionBetween(routine.position, routines[index + 1]?.position)));
-              onClose();
-              showToast(`Made “${copy.name}”`);
-            }}
-          />
-          {index > 0 && <SheetAction icon={<ArrowUp />} label="Move up" onClick={() => move(-1)} />}
-          {index < routines.length - 1 && <SheetAction icon={<ArrowDown />} label="Move down" onClick={() => move(1)} />}
-          <SheetAction
-            icon={<Trash />}
-            label="Delete"
-            danger
-            onClick={() => {
-              deleteRoutine(routine.id);
-              onClose();
-              showToast(`Deleted “${routine.name}”`, { label: 'Undo', run: () => putRoutine(routine) });
-            }}
-          />
+          <ActionGroup>
+            <SheetAction icon={<Pencil />} label="Edit" chevron onClick={() => (onClose(), navigate(`/routine/${routine.id}`))} />
+            <SheetAction
+              icon={<Copy size={20} />}
+              label="Duplicate"
+              onClick={() => {
+                const copy = putRoutine(duplicateRoutine(routine, positionBetween(routine.position, routines[index + 1]?.position)));
+                onClose();
+                showToast(`Made “${copy.name}”`);
+              }}
+            />
+            {index > 0 && <SheetAction icon={<ArrowUp />} label="Move up" onClick={() => move(-1)} />}
+            {index < routines.length - 1 && <SheetAction icon={<ArrowDown />} label="Move down" onClick={() => move(1)} />}
+          </ActionGroup>
+          <ActionGroup>
+            <SheetAction
+              icon={<Trash />}
+              label="Delete"
+              danger
+              onClick={() => {
+                deleteRoutine(routine.id);
+                onClose();
+                showToast(`Deleted “${routine.name}”`, { label: 'Undo', run: () => putRoutine(routine) });
+              }}
+            />
+          </ActionGroup>
         </>
       )}
     </Sheet>

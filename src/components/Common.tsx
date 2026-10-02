@@ -5,7 +5,7 @@ import { dismissToast, useToast } from '../lib/toast';
 import { activeWorkout, useData } from '../lib/store';
 import { doneSetCount } from '../lib/workout';
 import { stopwatch } from '../lib/dates';
-import { ChevronLeft, Close, Dumbbell, HistoryIcon, ListIcon, Play } from './Icons';
+import { ChevronLeft, ChevronRight, Close, Dumbbell, HistoryIcon, ListIcon, Play } from './Icons';
 
 export type Tab = 'train' | 'history' | 'exercises';
 
@@ -168,6 +168,7 @@ export function Sheet({
     >
       {open && (
         <div class="sheet-body">
+          <span class="sheet-grabber" aria-hidden="true" />
           <div class="sheet-head">
             <h2 id={id} class="sheet-title">
               {title}
@@ -183,18 +184,34 @@ export function Sheet({
   );
 }
 
-/** A row in an action sheet. */
+/**
+ * Rows of actions that belong together, drawn as one surface with hairlines
+ * between them. A menu puts its everyday actions in one group and anything
+ * destructive in a group of its own, last.
+ */
+export function ActionGroup({ children, label }: { children: ComponentChildren; label?: string }) {
+  return (
+    <div class="menu" role="group" aria-label={label}>
+      {children}
+    </div>
+  );
+}
+
+/** A row in an action sheet (inside an ActionGroup). */
 export function SheetAction({
   icon,
   label,
   hint,
   danger,
+  chevron,
   onClick,
 }: {
   icon?: ComponentChildren;
   label: string;
   hint?: string;
   danger?: boolean;
+  /** For an action that opens another screen. */
+  chevron?: boolean;
   onClick: () => void;
 }) {
   return (
@@ -204,6 +221,7 @@ export function SheetAction({
         <span class="row-title">{label}</span>
         {hint && <span class="row-sub">{hint}</span>}
       </span>
+      {chevron && <ChevronRight size={18} />}
     </button>
   );
 }

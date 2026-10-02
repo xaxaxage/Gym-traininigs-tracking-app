@@ -107,7 +107,7 @@ export function Summary({ workout }: { workout: Workout }) {
 
       <div class="footer">
         <div class="footer-inner">
-          <a href={`#/workout/${workout.id}`} class="btn-secondary" onClick={(e) => (e.preventDefault(), navigate(`/workout/${workout.id}`, { replace: true }))}>
+          <a href={`#/workout/${workout.id}`} class="btn-tonal" onClick={(e) => (e.preventDefault(), navigate(`/workout/${workout.id}`, { replace: true }))}>
             View
           </a>
           <button type="button" class="btn-primary" onClick={() => navigate('/', { replace: true })}>

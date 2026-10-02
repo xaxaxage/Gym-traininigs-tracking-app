@@ -14,7 +14,7 @@ import { ExerciseDetail } from './screens/ExerciseDetail';
 import { CustomExerciseEditor } from './screens/CustomExercise';
 import { History } from './screens/History';
 import { WorkoutView } from './screens/WorkoutView';
-import { Settings } from './screens/Settings';
+import { isSettingsPage, Settings } from './screens/Settings';
 
 function Missing({ message, home = '/' }: { message: string; home?: string }) {
   return (
@@ -123,7 +123,9 @@ export function App() {
       break;
     }
     case 'settings':
-      screen = <Settings />;
+      if (!segments[1]) screen = <Settings />;
+      else if (isSettingsPage(segments[1])) screen = <Settings page={segments[1]} />;
+      else screen = <Missing message="Page not found." home="/settings" />;
       break;
     default:
       screen = <Missing message="Page not found." />;

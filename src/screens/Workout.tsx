@@ -26,7 +26,7 @@ import { fmtDuration, fmtVolume, restLabel } from '../lib/units';
 import { fmtSet, plural } from '../lib/format';
 import { scrollToPending } from '../lib/scroll';
 import { NumberInput, unitFor, type Field } from '../components/NumberInput';
-import { Sheet, SheetAction, useElapsed } from '../components/Common';
+import { ActionGroup, Sheet, SheetAction, useElapsed } from '../components/Common';
 import {
   ArrowDown,
   ArrowUp,
@@ -36,6 +36,7 @@ import {
   Info,
   More,
   Note,
+  Pencil,
   Plus,
   Swap,
   Timer,
@@ -58,6 +59,7 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
   const [reorder, setReorder] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [renaming, setRenaming] = useState(false);
+  const [workoutMenu, setWorkoutMenu] = useState(false);
   const [notesOpen, setNotesOpen] = useState<Set<string>>(new Set());
 
   useEffect(() => scrollToPending((id) => `ex-${id}`), []);
@@ -108,6 +110,9 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
             <span class="workout-name">{workout.name}</span>
             {live ? <LiveClock startedAt={workout.startedAt} done={done} /> : <span class="workout-when">{shortDate(workout.date)} · {clockTime(workout.startedAt)}</span>}
           </button>
+          <button type="button" class="icon-btn" aria-label="Workout options" onClick={() => setWorkoutMenu(true)}>
+            <More />
+          </button>
           {live ? (
             <button type="button" class="btn-primary btn-small finish-btn" onClick={() => setFinishing(true)}>
               Finish
@@ -122,7 +127,10 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
         {!live && <WhenFields workout={workout} />}
 
         {workout.exercises.length === 0 && (
-          <div class="card empty-workout">
+          <div class="empty-workout">
+            <span class="empty-icon" aria-hidden="true">
+              <Plus size={26} />
+            </span>
             <p class="body-text center">
               {live ? 'Add the exercises you are doing. Last time\'s numbers are filled in for you.' : 'This workout has no exercises.'}
             </p>
@@ -143,17 +151,21 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
             onMenu={() => setMenu(e)}
             onSetMenu={(s, i) => setSetMenuFor({ e, s, index: i })}
             onRest={() => setRestFor(e)}
+            onNote={() => {
+              setNotesOpen(new Set([...notesOpen, e.id]));
+              requestAnimationFrame(() => document.getElementById(`note-${e.id}`)?.focus());
+            }}
           />
         ))}
 
-        <a href={pickHref()} class="btn-secondary add-exercises">
+        <a href={pickHref()} class="btn-tonal add-exercises">
           <Plus />
           Add exercises
         </a>
 
         <section class="field workout-notes">
           <label for="workout-notes" class="field-label">
-            Workout notes <span class="optional">(optional)</span>
+            Workout notes
           </label>
           <textarea
             id="workout-notes"
@@ -165,26 +177,44 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
           />
         </section>
 
-        <button
-          type="button"
-          class="link-btn left danger"
-          onClick={() => {
-            if (live && done === 0 && workout.exercises.length === 0) return discard(workout.id, { undo: false });
-            if (confirm(live ? 'Discard this workout? What you logged in it is deleted.' : 'Delete this workout from your history?')) discard(workout.id);
-          }}
-        >
-          <Trash size={18} />
-          {live ? 'Discard workout' : 'Delete workout'}
-        </button>
       </main>
 
       {live && <RestBar workoutId={workout.id} />}
 
+      <Sheet open={workoutMenu} onClose={() => setWorkoutMenu(false)} title={workout.name}>
+        <ActionGroup>
+          <SheetAction icon={<Pencil />} label="Rename" onClick={() => (setWorkoutMenu(false), setRenaming(true))} />
+          {workout.exercises.length > 1 && (
+            <SheetAction icon={<ArrowDown />} label="Reorder exercises" onClick={() => (setWorkoutMenu(false), setReorder(true))} />
+          )}
+          <SheetAction
+            icon={<Note />}
+            label="Workout notes"
+            onClick={() => {
+              setWorkoutMenu(false);
+              const notes = document.getElementById('workout-notes');
+              notes?.scrollIntoView({ block: 'center' });
+              notes?.focus();
+            }}
+          />
+        </ActionGroup>
+        <ActionGroup>
+          <SheetAction
+            icon={<Trash />}
+            label={live ? 'Discard workout' : 'Delete workout'}
+            danger
+            onClick={() => {
+              setWorkoutMenu(false);
+              if (live && done === 0 && workout.exercises.length === 0) return discard(workout.id, { undo: false });
+              if (confirm(live ? 'Discard this workout? What you logged in it is deleted.' : 'Delete this workout from your history?')) discard(workout.id);
+            }}
+          />
+        </ActionGroup>
+      </Sheet>
+
       <ExerciseMenu
         e={menu}
         onClose={() => setMenu(null)}
-        onNote={(e) => setNotesOpen(new Set([...notesOpen, e.id]))}
-        onRest={(e) => setRestFor(e)}
         onSwap={(e) => navigate(pickHref(e.id).slice(1))}
         onReorder={() => setReorder(true)}
         onRemove={(e) => {
@@ -197,25 +227,29 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
       <Sheet open={!!setMenuFor} onClose={() => setSetMenuFor(null)} title={setMenuFor ? `${setMenuFor.e.name} · set ${setMenuFor.index + 1}` : ''}>
         {setMenuFor && (
           <>
-            <SheetAction
-              icon={<Plus />}
-              label="Add a set below"
-              onClick={() => {
-                const { e, index } = setMenuFor;
-                const copy = addSet({ ...e, sets: e.sets.slice(0, index + 1) });
-                change({ ...e, sets: [...copy.sets, ...e.sets.slice(index + 1)] });
-                setSetMenuFor(null);
-              }}
-            />
-            <SheetAction
-              icon={<Trash />}
-              label="Delete set"
-              danger
-              onClick={() => {
-                change(removeSet(setMenuFor.e, setMenuFor.s.id));
-                setSetMenuFor(null);
-              }}
-            />
+            <ActionGroup>
+              <SheetAction
+                icon={<Plus />}
+                label="Add a set below"
+                onClick={() => {
+                  const { e, index } = setMenuFor;
+                  const copy = addSet({ ...e, sets: e.sets.slice(0, index + 1) });
+                  change({ ...e, sets: [...copy.sets, ...e.sets.slice(index + 1)] });
+                  setSetMenuFor(null);
+                }}
+              />
+            </ActionGroup>
+            <ActionGroup>
+              <SheetAction
+                icon={<Trash />}
+                label="Delete set"
+                danger
+                onClick={() => {
+                  change(removeSet(setMenuFor.e, setMenuFor.s.id));
+                  setSetMenuFor(null);
+                }}
+              />
+            </ActionGroup>
           </>
         )}
       </Sheet>
@@ -232,16 +266,16 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
       />
 
       <Sheet open={reorder} onClose={() => setReorder(false)} title="Reorder exercises">
-        <ol class="reorder-list">
+        <ol class="group reorder-list">
           {workout.exercises.map((e, i) => (
             <li key={e.id} class="reorder-row">
               <span class="reorder-name">{e.name}</span>
-              <button type="button" class="icon-btn" aria-label={`Move ${e.name} up`} disabled={i === 0} onClick={() => save({ ...getLatest(workout), exercises: moveItem(getLatest(workout).exercises, i, -1) })}>
+              <button type="button" class="icon-btn filled" aria-label={`Move ${e.name} up`} disabled={i === 0} onClick={() => save({ ...getLatest(workout), exercises: moveItem(getLatest(workout).exercises, i, -1) })}>
                 <ArrowUp />
               </button>
               <button
                 type="button"
-                class="icon-btn"
+                class="icon-btn filled"
                 aria-label={`Move ${e.name} down`}
                 disabled={i === workout.exercises.length - 1}
                 onClick={() => save({ ...getLatest(workout), exercises: moveItem(getLatest(workout).exercises, i, 1) })}
@@ -263,7 +297,7 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
             <button type="button" class="btn-primary" onClick={() => setFinishing(false)}>
               Keep going
             </button>
-            <button type="button" class="btn-secondary danger" onClick={() => (setFinishing(false), discard(workout.id, { undo: false }))}>
+            <button type="button" class="btn-tonal danger" onClick={() => (setFinishing(false), discard(workout.id, { undo: false }))}>
               Discard workout
             </button>
           </>
@@ -280,7 +314,7 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
               <Check />
               Finish workout
             </button>
-            <button type="button" class="btn-secondary" onClick={() => setFinishing(false)}>
+            <button type="button" class="btn-tonal" onClick={() => setFinishing(false)}>
               Keep going
             </button>
           </>
@@ -394,6 +428,7 @@ function ExerciseCard({
   onMenu,
   onSetMenu,
   onRest,
+  onNote,
 }: {
   e: WorkoutExercise;
   index: number;
@@ -406,9 +441,13 @@ function ExerciseCard({
   onMenu: () => void;
   onSetMenu: (s: WorkoutSet, index: number) => void;
   onRest: () => void;
+  onNote: () => void;
 }) {
   const fields = fieldsFor(e.logType);
   const allDone = e.sets.length > 0 && e.sets.every((s) => s.done);
+  const doneCount = e.sets.filter((s) => s.done).length;
+  // The "previous" column only takes room once there's something to show in it.
+  const hasPrev = previous.length > 0;
   const headingId = `ex-${e.id}`;
   return (
     <section class={`card exercise-card${allDone ? ' all-done' : ''}`} aria-labelledby={headingId}>
@@ -419,32 +458,47 @@ function ExerciseCard({
             {e.name}
           </a>
         </h2>
-        <button type="button" class="icon-btn plain ink" aria-label={`More for ${e.name}`} onClick={onMenu}>
+        <span class={`exercise-progress num${allDone ? ' done' : ''}`} aria-label={`${doneCount} of ${plural(e.sets.length, 'set')} done`}>
+          {allDone ? <Check size={14} strokeWidth={3} /> : null}
+          {doneCount}/{e.sets.length}
+        </span>
+        <button type="button" class="icon-btn" aria-label={`More for ${e.name}`} onClick={onMenu}>
           <More />
         </button>
       </div>
-      {rest !== undefined && (
-        <button type="button" class="rest-chip" onClick={onRest} aria-label={`Rest ${restLabel(rest)} after each set. Change`}>
-          <Timer size={16} />
-          {rest > 0 ? `Rest ${fmtDuration(rest)}` : 'No rest timer'}
-        </button>
-      )}
+      <div class="exercise-tools">
+        {rest !== undefined && (
+          <button type="button" class="tool-btn" onClick={onRest} aria-label={`Rest ${restLabel(rest)} after each set. Change`}>
+            <Timer size={16} />
+            {rest > 0 ? fmtDuration(rest) : 'No rest'}
+          </button>
+        )}
+        {!notesOpen && (
+          <button type="button" class="tool-btn" onClick={onNote} aria-label={`Add a note for ${e.name}`}>
+            <Note size={16} />
+            Note
+          </button>
+        )}
+      </div>
       {notesOpen && (
         <textarea
+          id={`note-${e.id}`}
           class="input textarea exercise-note"
           rows={1}
           aria-label={`Notes for ${e.name}`}
-          placeholder="Notes (seat height, grip…)"
+          placeholder="Seat height, grip, how it felt…"
           value={e.notes}
           onInput={(ev) => onChange({ ...e, notes: (ev.target as HTMLTextAreaElement).value.slice(0, 2000) })}
         />
       )}
-      <div class={`sets fields-${fields.length}`} role="table" aria-label={`Sets of ${e.name}`}>
+      <div class={`sets fields-${fields.length}${hasPrev ? '' : ' no-prev'}`} role="table" aria-label={`Sets of ${e.name}`}>
         <div class="set-row set-header" role="row">
           <span role="columnheader">Set</span>
-          <span role="columnheader" class="set-prev">
-            Last
-          </span>
+          {hasPrev && (
+            <span role="columnheader" class="set-prev">
+              Last
+            </span>
+          )}
           {fields.map((f) => (
             <span role="columnheader">{fieldLabel(f, units, e.logType)}</span>
           ))}
@@ -460,6 +514,7 @@ function ExerciseCard({
             index={i}
             units={units}
             previous={previous[i]}
+            showPrev={hasPrev}
             fields={fields}
             onChange={onChange}
             onComplete={() => onComplete(s, i)}
@@ -485,6 +540,7 @@ function SetRow({
   index,
   units,
   previous,
+  showPrev,
   fields,
   onChange,
   onComplete,
@@ -495,6 +551,7 @@ function SetRow({
   index: number;
   units: Units;
   previous?: WorkoutSet;
+  showPrev: boolean;
   fields: Field[];
   onChange: (e: WorkoutExercise) => void;
   onComplete: () => void;
@@ -507,6 +564,7 @@ function SetRow({
       <button type="button" class="set-num" aria-label={`${label}: options`} onClick={onMenu} role="cell">
         {index + 1}
       </button>
+      {showPrev && (
       <span class="set-prev" role="cell">
         {prev ? (
           <button
@@ -524,6 +582,7 @@ function SetRow({
           </span>
         )}
       </span>
+      )}
       {fields.map((f) => (
         <span role="cell" class="set-cell">
           <NumberInput
@@ -556,16 +615,12 @@ function SetRow({
 function ExerciseMenu({
   e,
   onClose,
-  onNote,
-  onRest,
   onSwap,
   onReorder,
   onRemove,
 }: {
   e: WorkoutExercise | null;
   onClose: () => void;
-  onNote: (e: WorkoutExercise) => void;
-  onRest: (e: WorkoutExercise) => void;
   onSwap: (e: WorkoutExercise) => void;
   onReorder: () => void;
   onRemove: (e: WorkoutExercise) => void;
@@ -579,12 +634,14 @@ function ExerciseMenu({
     <Sheet open={!!e} onClose={onClose} title={e?.name ?? ''}>
       {e && (
         <>
-          <SheetAction icon={<Note />} label={e.notes ? 'Edit note' : 'Add a note'} onClick={run(onNote)} />
-          <SheetAction icon={<Timer />} label="Rest time" onClick={run(onRest)} />
-          <SheetAction icon={<Swap />} label="Swap for another exercise" onClick={run(onSwap)} />
-          <SheetAction icon={<ArrowDown />} label="Reorder exercises" onClick={run(() => onReorder())} />
-          <SheetAction icon={<Info />} label="Exercise details and history" onClick={run((x) => navigate(`/exercise/${encodeURIComponent(x.exerciseId)}`))} />
-          <SheetAction icon={<Trash />} label="Remove exercise" danger onClick={run(onRemove)} />
+          <ActionGroup>
+            <SheetAction icon={<Swap />} label="Swap for another exercise" chevron onClick={run(onSwap)} />
+            <SheetAction icon={<ArrowDown />} label="Reorder exercises" onClick={run(() => onReorder())} />
+            <SheetAction icon={<Info />} label="Exercise details and history" chevron onClick={run((x) => navigate(`/exercise/${encodeURIComponent(x.exerciseId)}`))} />
+          </ActionGroup>
+          <ActionGroup>
+            <SheetAction icon={<Trash />} label="Remove exercise" danger onClick={run(onRemove)} />
+          </ActionGroup>
         </>
       )}
     </Sheet>
@@ -616,7 +673,7 @@ function RestPicker({
               </button>
             ))}
           </div>
-          <label class="toggle-row">
+          <label class="check-row">
             <input type="checkbox" checked={always} onChange={(ev) => setAlways((ev.target as HTMLInputElement).checked)} />
             <span>Use this every time I do {e.name}</span>
           </label>

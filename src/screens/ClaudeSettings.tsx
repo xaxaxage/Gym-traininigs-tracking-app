@@ -85,11 +85,8 @@ export function ClaudeSettings() {
   const typedHost = connectorHost(hostText);
 
   return (
-    <section class="card stack-12 claude-settings" aria-labelledby="claude-title">
-      <h2 id="claude-title" class="section-title">
-        Use with Claude
-      </h2>
-      <p class="field-hint">
+    <section class="page-section claude-settings" aria-label="Use with Claude">
+      <p class="lead">
         Ask Claude how your training is going, log a workout by describing it (“bench 3×8 at 80 kg, then rows 3×10 at 60”),
         or have it plan a program as routines — on claude.ai and in the Claude app on your phone.
       </p>
@@ -98,7 +95,7 @@ export function ClaudeSettings() {
         <ConnectorAddress phrase={config.phrase} relays={config.relays} host={host} />
       ) : (
         <div class="notice plain">
-          Turn on <strong>Sync between devices</strong> first (above): Claude reaches your training log through it.
+          Turn on <a href="#/settings/sync">Sync between devices</a> first: Claude reaches your training log through it.
         </div>
       )}
 
@@ -118,7 +115,7 @@ export function ClaudeSettings() {
           <li>When it asks for the sync key, paste your 12 words.</li>
         </ol>
         {syncing && config && (
-          <button type="button" class="btn-secondary" onClick={() => copy(config.phrase)}>
+          <button type="button" class="btn-tonal" onClick={() => copy(config.phrase)}>
             Copy the 12 words
           </button>
         )}

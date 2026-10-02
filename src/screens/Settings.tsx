@@ -1,23 +1,147 @@
+import type { ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
-import { backupJson, clearAll, parseBackup, restoreBackup, updateSettings, useData } from '../lib/store';
+import { backupJson, clearAll, finishedWorkouts, parseBackup, restoreBackup, updateSettings, useData } from '../lib/store';
 import { todayKey } from '../lib/dates';
 import { saveFile } from '../lib/files';
 import { showToast } from '../lib/toast';
 import { fmtDuration } from '../lib/units';
 import { plural } from '../lib/format';
 import { DATASET } from '../lib/library/catalog';
+import { AUTO_THEME, HARBOR, PALETTES } from '../lib/theme';
+import { useSyncStatus } from '../lib/sync/state';
 import { Segmented, Switch, TopBar } from '../components/Common';
-import { Minus, Plus } from '../components/Icons';
-import { SettingsExtras } from './SettingsExtras';
+import { Archive, Chat, ChevronRight, Download, Info, Minus, Palette, Plus, SyncIcon, Trash, Upload } from '../components/Icons';
+import { AppearanceSettings } from './AppearanceSettings';
+import { SyncSettings } from './SyncSettings';
+import { ClaudeSettings } from './ClaudeSettings';
+
+export type SettingsPage = 'appearance' | 'sync' | 'claude' | 'data' | 'about';
+
+export const SETTINGS_PAGES: Record<SettingsPage, string> = {
+  appearance: 'Appearance',
+  sync: 'Sync between devices',
+  claude: 'Use with Claude',
+  data: 'Backup and data',
+  about: 'About',
+};
+
+export function isSettingsPage(s: string | undefined): s is SettingsPage {
+  return !!s && s in SETTINGS_PAGES;
+}
+
+/** Settings: training options right here, everything else one tap away. */
+export function Settings({ page }: { page?: SettingsPage }) {
+  if (page) {
+    return (
+      <main class="screen settings-page">
+        <TopBar title={SETTINGS_PAGES[page]} back="/settings" />
+        {page === 'appearance' && <AppearanceSettings />}
+        {page === 'sync' && <SyncSettings />}
+        {page === 'claude' && <ClaudeSettings />}
+        {page === 'data' && <DataSettings />}
+        {page === 'about' && <About />}
+      </main>
+    );
+  }
+  return <SettingsHome />;
+}
+
+function LinkRow({ href, icon, tone, label, value }: { href: string; icon: ComponentChildren; tone?: string; label: string; value?: string }) {
+  return (
+    <a href={href} class="setting">
+      <span class={`setting-icon${tone ? ` ${tone}` : ''}`} aria-hidden="true">
+        {icon}
+      </span>
+      <span class="setting-label">{label}</span>
+      {value && <span class="setting-value">{value}</span>}
+      <ChevronRight size={18} />
+    </a>
+  );
+}
+
+function SettingsHome() {
+  const data = useData();
+  const s = data.settings;
+  const sync = useSyncStatus();
+  const rest = (by: number) => updateSettings({ restSeconds: Math.min(600, Math.max(0, s.restSeconds + by)) });
+  const palette =
+    s.theme === AUTO_THEME ? 'Auto' : (PALETTES.find((p) => p.id === s.theme) ?? HARBOR).name;
+
+  return (
+    <main class="screen settings-page">
+      <TopBar title="Settings" />
+
+      <section class="group-section" aria-labelledby="training-title">
+        <h2 id="training-title" class="list-label">
+          Training
+        </h2>
+        <div class="group">
+          <div class="setting">
+            <span class="setting-label" id="units-label">
+              Units
+            </span>
+            <Segmented
+              label="Units"
+              value={s.units}
+              options={[
+                { value: 'kg', label: 'kg' },
+                { value: 'lb', label: 'lb' },
+              ]}
+              onChange={(units) => updateSettings({ units })}
+            />
+          </div>
+          <div class="setting">
+            <span class="setting-label" id="rest-label">
+              Rest between sets
+            </span>
+            <div class="stepper" role="group" aria-labelledby="rest-label">
+              <button type="button" class="icon-btn" aria-label="15 seconds less" disabled={s.restSeconds <= 0} onClick={() => rest(-15)}>
+                <Minus />
+              </button>
+              <output class="stepper-value num" aria-live="polite">
+                {s.restSeconds > 0 ? fmtDuration(s.restSeconds) : 'Off'}
+              </output>
+              <button type="button" class="icon-btn" aria-label="15 seconds more" disabled={s.restSeconds >= 600} onClick={() => rest(15)}>
+                <Plus />
+              </button>
+            </div>
+          </div>
+          <Switch id="auto-rest" checked={s.autoRest} label="Start rest timer after a set" onChange={(autoRest) => updateSettings({ autoRest })} />
+          <Switch id="keep-awake" checked={s.keepAwake} label="Keep the screen on" hint="While a workout is going" onChange={(keepAwake) => updateSettings({ keepAwake })} />
+        </div>
+        <p class="group-note">
+          Switching units never changes your numbers. An exercise can have its own rest time — tap the timer on its card. The
+          timer shows on screen only: a Home Screen web app can't ring while the phone is locked.
+        </p>
+      </section>
+
+      <section class="group-section" aria-label="More settings">
+        <div class="group">
+          <LinkRow href="#/settings/appearance" icon={<Palette size={18} />} tone="accent" label="Appearance" value={palette} />
+          <LinkRow href="#/settings/sync" icon={<SyncIcon size={18} />} tone="success" label="Sync between devices" value={sync.state === 'off' ? 'Off' : 'On'} />
+          <LinkRow href="#/settings/claude" icon={<Chat size={18} />} label="Use with Claude" />
+        </div>
+      </section>
+
+      <section class="group-section" aria-label="Data and about">
+        <div class="group">
+          <LinkRow href="#/settings/data" icon={<Archive size={18} />} tone="ink" label="Backup and data" value={plural(finishedWorkouts(data).length, 'workout')} />
+          <LinkRow href="#/settings/about" icon={<Info size={18} />} tone="ink" label="About and installing" />
+        </div>
+      </section>
+
+      <p class="app-version">Version {__APP_VERSION__}</p>
+    </main>
+  );
+}
 
 async function exportBackup() {
   const name = `gym-tracker-backup-${todayKey()}.json`;
   await saveFile(new File([backupJson()], name, { type: 'application/json' }), 'Gym Tracker backup');
 }
 
-export function Settings() {
+function DataSettings() {
   const data = useData();
-  const s = data.settings;
   const [importError, setImportError] = useState('');
 
   const importBackup = async (file: File) => {
@@ -33,84 +157,28 @@ export function Settings() {
     }
   };
 
-  const rest = (by: number) => updateSettings({ restSeconds: Math.min(600, Math.max(0, s.restSeconds + by)) });
-
   return (
-    <main class="screen settings">
-      <TopBar title="Settings" />
-
-      <section class="card stack-12" aria-labelledby="training-title">
-        <h2 id="training-title" class="section-title">
-          Training
+    <>
+      <p class="lead">
+        Everything is saved on this device as you go — {plural(finishedWorkouts(data).length, 'workout')}, {plural(data.routines.length, 'routine')}
+        {data.customExercises.length ? `, ${plural(data.customExercises.length, 'custom exercise')}` : ''}.
+      </p>
+      <section class="group-section" aria-labelledby="backup-title">
+        <h2 id="backup-title" class="list-label">
+          Backup
         </h2>
-        <div class="field">
-          <span class="field-label" id="units-label">
-            Units
-          </span>
-          <Segmented
-            label="Units"
-            value={s.units}
-            options={[
-              { value: 'kg', label: 'Kilograms (kg)' },
-              { value: 'lb', label: 'Pounds (lb)' },
-            ]}
-            onChange={(units) => updateSettings({ units })}
-          />
-          <span class="field-hint">
-            Weights are kept in kg and shown in the unit you pick, so switching never changes your numbers. Distances follow: km and
-            m, or miles and yards.
-          </span>
-        </div>
-        <div class="field">
-          <span class="field-label" id="rest-label">
-            Rest timer
-          </span>
-          <div class="stepper" role="group" aria-labelledby="rest-label">
-            <button type="button" class="icon-btn" aria-label="15 seconds less" disabled={s.restSeconds <= 0} onClick={() => rest(-15)}>
-              <Minus />
-            </button>
-            <output class="stepper-value num" aria-live="polite">
-              {s.restSeconds > 0 ? fmtDuration(s.restSeconds) : 'Off'}
-            </output>
-            <button type="button" class="icon-btn" aria-label="15 seconds more" disabled={s.restSeconds >= 600} onClick={() => rest(15)}>
-              <Plus />
-            </button>
-          </div>
-          <span class="field-hint">The rest after each set, unless an exercise has its own (set it from the exercise's timer button).</span>
-        </div>
-        <Switch
-          id="auto-rest"
-          checked={s.autoRest}
-          label="Start the rest timer after each set"
-          hint="The timer shows on screen. iPhone web apps can't sound an alarm or vibrate while the phone is locked."
-          onChange={(autoRest) => updateSettings({ autoRest })}
-        />
-        <Switch
-          id="keep-awake"
-          checked={s.keepAwake}
-          label="Keep the screen on during a workout"
-          hint="Where the browser allows it. Uses a little more battery."
-          onChange={(keepAwake) => updateSettings({ keepAwake })}
-        />
-      </section>
-
-      <SettingsExtras />
-
-      <section class="card stack-12" aria-labelledby="data-title">
-        <h2 id="data-title" class="section-title">
-          Your data
-        </h2>
-        <p class="body-text">
-          Everything is saved on this device as you go ({plural(data.workouts.length, 'workout')}, {plural(data.routines.length, 'routine')}), and on your
-          other devices if sync is on. Export a backup now and then and keep it in Files or iCloud Drive. Backups never contain your sync
-          key.
-        </p>
-        <div class="button-pair">
-          <button type="button" class="btn-secondary" onClick={() => exportBackup()}>
-            Export backup
+        <div class="group">
+          <button type="button" class="setting setting-button" onClick={() => exportBackup()}>
+            <span class="setting-icon" aria-hidden="true">
+              <Download size={18} />
+            </span>
+            <span class="setting-label">Export backup</span>
           </button>
-          <label class="btn-secondary file-btn">
-            Import backup
+          <label class="setting setting-button file-btn">
+            <span class="setting-icon" aria-hidden="true">
+              <Upload size={18} />
+            </span>
+            <span class="setting-label">Import backup</span>
             <input
               type="file"
               accept="application/json,.json"
@@ -129,36 +197,56 @@ export function Settings() {
             {importError}
           </p>
         )}
-        <button
-          type="button"
-          class="link-btn left danger"
-          onClick={() => {
-            if (confirm('Delete every workout, routine and custom exercise — on this device and every synced one? This cannot be undone.')) {
-              clearAll();
-              showToast('Everything was deleted');
-            }
-          }}
-        >
-          Delete everything
-        </button>
+        <p class="group-note">
+          Export one now and then and keep it in Files or iCloud Drive. A backup holds your workouts, routines, exercises and
+          settings — never your sync key. Importing replaces what's on this device.
+        </p>
       </section>
+      <section class="group-section" aria-label="Delete">
+        <div class="group">
+          <button
+            type="button"
+            class="setting setting-button danger"
+            onClick={() => {
+              if (confirm('Delete every workout, routine and custom exercise — on this device and every synced one? This cannot be undone.')) {
+                clearAll();
+                showToast('Everything was deleted');
+              }
+            }}
+          >
+            <span class="setting-icon danger" aria-hidden="true">
+              <Trash size={18} />
+            </span>
+            <span class="setting-label">Delete everything</span>
+          </button>
+        </div>
+        <p class="group-note">Also on your other devices, if sync is on.</p>
+      </section>
+    </>
+  );
+}
 
-      <section class="card stack-12" aria-labelledby="install-title">
+function About() {
+  return (
+    <>
+      <section class="page-section" aria-labelledby="install-title">
         <h2 id="install-title" class="section-title">
           Use it like an app
         </h2>
-        <p class="body-text">
-          On iPhone, open this page in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. It then opens full screen from its
-          own icon and works offline at the gym. On a Windows PC, use the install button in Edge's or Chrome's address bar.
-        </p>
-        <p class="body-text">
-          <strong>On iPhone the Home Screen app keeps its own data, separate from Safari.</strong> Workouts logged in a Safari tab don't show up
-          in the Home Screen app (and the other way round) — so always open it from the icon, or turn on sync. Removing the icon can delete its
-          data, so export a backup first.
-        </p>
+        <ol class="steps">
+          <li>
+            On iPhone, open this page in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.
+          </li>
+          <li>On a Windows PC, use the install button in Edge's or Chrome's address bar.</li>
+          <li>It then opens full screen from its own icon and works offline at the gym.</li>
+        </ol>
+        <div class="notice plain">
+          <strong>The Home Screen app keeps its own data, separate from Safari.</strong> Always open it from the icon, or turn
+          on sync. Removing the icon can delete its data, so export a backup first.
+        </div>
       </section>
 
-      <section class="card stack-8" aria-labelledby="credits-title">
+      <section class="page-section" aria-labelledby="credits-title">
         <h2 id="credits-title" class="section-title">
           Credits
         </h2>
@@ -177,6 +265,6 @@ export function Settings() {
       </section>
 
       <p class="app-version">Version {__APP_VERSION__}</p>
-    </main>
+    </>
   );
 }

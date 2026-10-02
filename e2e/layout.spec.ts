@@ -13,7 +13,7 @@ test('every screen fits from 1440 px down to 280 px, without sideways scrolling'
   await page.getByRole('button', { name: 'Start Push' }).click();
   await expect(page.getByRole('heading', { name: 'Barbell Bench Press' })).toBeVisible();
   const routineId = await page.evaluate(() => JSON.parse(localStorage.getItem('gym-tracker:v1')!).routines[0].id);
-  const screens = ['#/', '#/workout', '#/exercises', '#/exercise/Barbell_Bench_Press_-_Medium_Grip', '#/history', '#/history?view=calendar', '#/settings', `#/routine/${routineId}`, '#/exercise/new'];
+  const screens = ['#/', '#/workout', '#/exercises', '#/exercise/Barbell_Bench_Press_-_Medium_Grip', '#/history', '#/history?view=calendar', '#/settings', '#/settings/appearance', '#/settings/sync', '#/settings/claude', '#/settings/data', '#/settings/about', `#/routine/${routineId}`, '#/exercise/new'];
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 800 });
     for (const hash of screens) {

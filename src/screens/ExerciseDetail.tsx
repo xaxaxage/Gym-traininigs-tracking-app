@@ -12,7 +12,7 @@ import { fmtSet, plural } from '../lib/format';
 import { motionOn } from '../lib/motion';
 import { showToast } from '../lib/toast';
 import { navigate } from '../lib/router';
-import { Loading, Sheet, SheetAction, TopBar } from '../components/Common';
+import { ActionGroup, Loading, Sheet, SheetAction, TopBar } from '../components/Common';
 import { Eye, EyeOff, More, Pencil, Star, Timer } from '../components/Icons';
 import type { ChartProps } from '../components/ProgressChart';
 
@@ -79,14 +79,14 @@ export function ExerciseDetail({ id }: { id: string }) {
 
         {exercise.images > 0 && <Photos id={exercise.id} name={exercise.name} count={exercise.images} />}
 
-        <section class="card stack-12" aria-labelledby="muscles-title">
-          <h2 id="muscles-title" class="section-title">
+        <section class="page-section" aria-labelledby="muscles-title">
+          <h2 id="muscles-title" class="sr-only">
             Muscles
           </h2>
           {exercise.primary.length > 0 ? (
             <div class="muscle-groups">
               <div>
-                <h3 class="list-label">Primary</h3>
+                <h3 class="list-label">Works</h3>
                 <ul class="tags strong">
                   {exercise.primary.map((m) => (
                     <li>{MUSCLE_LABEL[m]}</li>
@@ -95,7 +95,7 @@ export function ExerciseDetail({ id }: { id: string }) {
               </div>
               {exercise.secondary.length > 0 && (
                 <div>
-                  <h3 class="list-label">Secondary</h3>
+                  <h3 class="list-label">Also</h3>
                   <ul class="tags">
                     {exercise.secondary.map((m) => (
                       <li>{MUSCLE_LABEL[m]}</li>
@@ -107,12 +107,16 @@ export function ExerciseDetail({ id }: { id: string }) {
           ) : (
             <p class="muted">No muscles set.</p>
           )}
-          <button type="button" class="rest-chip" onClick={() => setRestSheet(true)}>
-            <Timer size={16} />
-            {rest !== undefined ? `Rest ${fmtDuration(rest)} after each set` : `Rest: the default (${fmtDuration(data.settings.restSeconds)})`}
-          </button>
         </section>
-
+        <div class="group">
+          <button type="button" class="setting setting-button" onClick={() => setRestSheet(true)}>
+            <span class="setting-icon" aria-hidden="true">
+              <Timer size={18} />
+            </span>
+            <span class="setting-label">Rest between sets</span>
+            <span class="setting-value">{rest !== undefined ? fmtDuration(rest) : `Default · ${fmtDuration(data.settings.restSeconds)}`}</span>
+          </button>
+        </div>
         <History sessions={sessions} logType={exercise.logType} units={units} />
 
         {!exercise.custom && <Instructions id={exercise.id} />}
@@ -129,8 +133,9 @@ export function ExerciseDetail({ id }: { id: string }) {
       </main>
 
       <Sheet open={menu} onClose={() => setMenu(false)} title={exercise.name}>
+        <ActionGroup>
         {exercise.custom && found && (
-          <SheetAction icon={<Pencil />} label="Edit exercise" onClick={() => (setMenu(false), navigate(`/exercise/${id}/edit`))} />
+          <SheetAction icon={<Pencil />} label="Edit exercise" chevron onClick={() => (setMenu(false), navigate(`/exercise/${id}/edit`))} />
         )}
         <SheetAction icon={<Timer />} label="Rest time" onClick={() => (setMenu(false), setRestSheet(true))} />
         <SheetAction
@@ -143,6 +148,7 @@ export function ExerciseDetail({ id }: { id: string }) {
             showToast(pref.hidden ? 'Shown in the library again' : 'Hidden from the library', { label: 'Undo', run: () => setPref(id, { hidden: pref.hidden }) });
           }}
         />
+        </ActionGroup>
       </Sheet>
 
       <Sheet open={restSheet} onClose={() => setRestSheet(false)} title={`Rest after ${exercise.name}`}>
@@ -232,7 +238,7 @@ function Instructions({ id }: { id: string }) {
   if (!steps) return <Loading label="Loading instructions…" />;
   if (steps.length === 0) return null;
   return (
-    <section class="card stack-12" aria-labelledby="how-title">
+    <section class="page-section" aria-labelledby="how-title">
       <h2 id="how-title" class="section-title">
         How to do it
       </h2>
@@ -249,11 +255,11 @@ function History({ sessions, logType, units }: { sessions: Session[]; logType: L
   const r = useMemo(() => records(sessions), [sessions]);
   if (sessions.length === 0) {
     return (
-      <section class="card stack-8" aria-labelledby="yours-title">
+      <section class="page-section" aria-labelledby="yours-title">
         <h2 id="yours-title" class="section-title">
           Your history
         </h2>
-        <p class="body-text">Once you've done this exercise, your records, progress and recent sets show up here.</p>
+        <p class="notice info plain">Once you've done this exercise, your records, progress and recent sets show up here.</p>
       </section>
     );
   }
@@ -294,7 +300,7 @@ function History({ sessions, logType, units }: { sessions: Session[]; logType: L
 
       {sessions.length >= 2 && <Progress sessions={sessions} logType={logType} units={units} />}
 
-      <section class="stack-8" aria-labelledby="recent-title">
+      <section class="page-section" aria-labelledby="recent-title">
         <h2 id="recent-title" class="section-title">
           Recent sets
         </h2>

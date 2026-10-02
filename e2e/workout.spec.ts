@@ -186,8 +186,7 @@ test('an empty workout: add, swap, reorder and remove exercises; notes; discard'
   await expect(card(page, 'Plank').getByLabel('Set 1 time')).toHaveValue('0:45');
 
   // Notes per exercise and for the workout.
-  await card(page, 'Front Squat').getByRole('button', { name: /More for/ }).click();
-  await page.getByRole('button', { name: 'Add a note' }).click();
+  await card(page, 'Front Squat').getByRole('button', { name: 'Add a note for Front Squat' }).click();
   await page.getByLabel('Notes for Front Squat').fill('Heels on plates');
   await page.getByLabel('Workout notes').fill('Felt strong');
   await page.reload();
@@ -202,6 +201,7 @@ test('an empty workout: add, swap, reorder and remove exercises; notes; discard'
   await expect(card(page, 'Front Squat')).toHaveCount(1);
 
   page.on('dialog', (d) => d.accept());
+  await page.getByRole('button', { name: 'Workout options' }).click();
   await page.getByRole('button', { name: 'Discard workout' }).click();
   await expect(page.getByRole('heading', { name: 'Train' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Start an empty workout' })).toBeVisible();
@@ -211,7 +211,7 @@ test('an empty workout: add, swap, reorder and remove exercises; notes; discard'
 test('pounds: shown and typed in lb, stored in kg', async ({ page }) => {
   await fresh(page);
   await page.goto('./#/settings');
-  await page.getByRole('button', { name: 'Pounds (lb)' }).click();
+  await page.getByRole('group', { name: 'Units' }).getByRole('button', { name: 'lb', exact: true }).click();
   await page.goto('./#/');
   await page.getByRole('button', { name: 'Start an empty workout' }).click();
   await page.getByRole('link', { name: 'Add exercises' }).click();

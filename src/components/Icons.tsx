@@ -275,3 +275,34 @@ export const Flame = (p: IconProps) => (
     <path d="M12 21c-4 0-7-2.7-7-6.6 0-3.3 2.3-5.4 3.6-7.4.4 1.8 1.4 3 2.6 3.6C11 7.2 12.6 4.6 15 3c-.3 3.1 1.1 5 2.4 6.6 1 1.3 1.6 2.7 1.6 4.4C19 18.2 16 21 12 21z" />
   </Svg>
 );
+
+export const Palette = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z" />
+    <circle cx="7.5" cy="11" r="1" fill="currentColor" />
+    <circle cx="10.5" cy="7.5" r="1" fill="currentColor" />
+    <circle cx="15" cy="7.5" r="1" fill="currentColor" />
+  </Svg>
+);
+
+export const SyncIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8" />
+    <path d="M4 3.5V8h4.5" />
+    <path d="M4 13a8 8 0 0 0 14.3 4.9L20 16" />
+    <path d="M20 20.5V16h-4.5" />
+  </Svg>
+);
+
+export const Archive = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="4" width="18" height="5" rx="1.5" />
+    <path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4" />
+  </Svg>
+);
+
+export const Grip = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 9h14M5 15h14" />
+  </Svg>
+);

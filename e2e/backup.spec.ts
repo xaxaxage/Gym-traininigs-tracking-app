@@ -15,7 +15,7 @@ test('export a backup, delete everything, and restore it', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: 'Finish workout' }).click();
   await page.getByRole('button', { name: 'Done' }).click();
 
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/data');
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup' }).click();
   const file = await (await download).path();
@@ -28,7 +28,7 @@ test('export a backup, delete everything, and restore it', async ({ page }) => {
   await page.goto('./#/history');
   await expect(page.getByText('No workouts yet')).toBeVisible();
 
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/data');
   await page.locator('input[type=file]').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(text) });
   await expect(page.getByText('Restored 1 workout')).toBeVisible();
   await page.goto('./#/history');
@@ -37,7 +37,7 @@ test('export a backup, delete everything, and restore it', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Full body B' })).toBeVisible();
 
   // Another app's file is refused, and nothing changes.
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/data');
   await page.locator('input[type=file]').setInputFiles({ name: 'other.json', mimeType: 'application/json', buffer: Buffer.from('{"version":1,"entries":[]}') });
   await expect(page.getByRole('alert')).toContainText('not a Gym Tracker backup');
   expect(errors).toEqual([]);

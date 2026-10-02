@@ -76,7 +76,7 @@ test('text is readable in every palette, on every main screen', async ({ page })
   await page.getByRole('button', { name: 'Start Full body B' }).click();
   await page.locator('.exercise-card').first().getByLabel('Set 1 weight in kg').fill('100');
   await page.locator('.check-btn').first().click();
-  const screens = ['/', '/workout', '/exercises', '/exercise/Barbell_Squat', '/history', '/history?view=calendar', '/settings', summary];
+  const screens = ['/', '/workout', '/exercises', '/exercise/Barbell_Squat', '/history', '/history?view=calendar', '/settings', '/settings/appearance', '/settings/sync', '/settings/claude', '/settings/data', summary];
 
   const failures: string[] = [];
   for (const id of PALETTES) {
@@ -101,7 +101,7 @@ test('text is readable in every palette, on every main screen', async ({ page })
 
 test('palettes apply at once and stay on this device; dark ones set a dark color scheme', async ({ page }) => {
   await fresh(page);
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/appearance');
   await page.getByRole('radio', { name: 'Night' }).click();
   await expect(page.getByRole('radio', { name: 'Night' })).toHaveAttribute('aria-checked', 'true');
   await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(14, 23, 25)');
@@ -114,7 +114,7 @@ test('palettes apply at once and stay on this device; dark ones set a dark color
 test('animations: on by default, off with the switch, and off when the system asks for reduced motion', async ({ page }) => {
   await fresh(page);
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'on');
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/appearance');
   await page.getByLabel('Animations').uncheck();
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'off');
   await page.getByLabel('Animations').check();

@@ -42,39 +42,45 @@ export function AppearanceSettings() {
   const reduced = systemReducesMotion();
 
   return (
-    <section class="card stack-12" aria-labelledby="look-title">
-      <h2 id="look-title" class="section-title">
-        Appearance
-      </h2>
-      <div class="palette-grid" role="radiogroup" aria-label="Color palette">
-        {options.map((o) => (
-          <button type="button" role="radio" aria-checked={o.id === selected} class="palette-option" onClick={() => updateSettings({ theme: o.id })}>
-            {o.swatch}
-            <span class="palette-name">
-              {o.id === selected && <Check size={14} strokeWidth={3} />}
-              {o.name}
-            </span>
-          </button>
-        ))}
-      </div>
-      <p class="field-hint">
-        {selected === AUTO_THEME
-          ? 'Auto uses Harbor by day and Night when your device is in dark mode.'
-          : 'Night, Espresso and OLED black are dark. The palette applies to this device only, so your phone can be dark while your computer stays light.'}
-      </p>
-      <Switch
-        id="motion-switch"
-        checked={animations && !reduced}
-        label="Animations"
-        hint={
-          reduced
-            ? 'Off while your device’s Reduce Motion setting is on.'
-            : animations
-              ? 'On: screens slide in, sets pop when checked off, the rest timer glides.'
-              : 'Off: everything appears instantly.'
-        }
-        onChange={(on) => updateSettings({ animations: on })}
-      />
-    </section>
+    <>
+      <section class="group-section" aria-labelledby="palette-label">
+        <h2 id="palette-label" class="list-label">
+          Color palette
+        </h2>
+        <div class="palette-grid" role="radiogroup" aria-label="Color palette">
+          {options.map((o) => (
+            <button type="button" role="radio" aria-checked={o.id === selected} class="palette-option" onClick={() => updateSettings({ theme: o.id })}>
+              {o.swatch}
+              <span class="palette-name">
+                {o.id === selected && <Check size={14} strokeWidth={3} />}
+                {o.name}
+              </span>
+            </button>
+          ))}
+        </div>
+        <p class="group-note">
+          {selected === AUTO_THEME
+            ? 'Auto uses Harbor by day and Night when your device is in dark mode.'
+            : 'Night, Espresso and OLED black are dark. The palette is kept on this device only, so your phone can be dark while your computer stays light.'}
+        </p>
+      </section>
+      <section class="group-section" aria-label="Motion">
+        <div class="group">
+          <Switch
+            id="motion-switch"
+            checked={animations && !reduced}
+            label="Animations"
+            hint={
+              reduced
+                ? 'Off while your device’s Reduce Motion setting is on.'
+                : animations
+                  ? 'Screens slide in, sets pop when checked off, the rest timer glides.'
+                  : 'Everything appears instantly.'
+            }
+            onChange={(on) => updateSettings({ animations: on })}
+          />
+        </div>
+      </section>
+    </>
   );
 }

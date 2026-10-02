@@ -257,10 +257,7 @@ export function SyncSettings() {
 
   if (!enabled) {
     return (
-      <section class="card stack-12" aria-labelledby="sync-title">
-        <h2 id="sync-title" class="section-title">
-          Sync between devices
-        </h2>
+      <section class="page-section" aria-label="Sync between devices">
 
         {mode === 'idle' && retiredAt && (
           <>
@@ -288,13 +285,12 @@ export function SyncSettings() {
 
         {mode === 'idle' && !retiredAt && (
           <>
-            <p class="body-text">
-              Use the same training log on your iPhone and your computer: a <strong>12-word sync key</strong> links them.
-              Workouts (the one in progress too), routines, your exercises and settings are encrypted on this device before
-              they're sent, and only devices with the key can read them. No account needed.
+            <p class="lead">
+              Use the same training log on your iPhone and your computer. A <strong>12-word sync key</strong> links them;
+              everything is encrypted on this device before it's sent. No account needed.
             </p>
             <div class="button-pair">
-              <button type="button" class="btn-secondary" onClick={() => setMode('join')}>
+              <button type="button" class="btn-tonal" onClick={() => setMode('join')}>
                 I have a key
               </button>
               <button type="button" class="btn-primary" onClick={openCreate}>
@@ -311,7 +307,7 @@ export function SyncSettings() {
               on your other devices. Anyone with these words can read and change your training log.
             </p>
             <Words phrase={phrase} />
-            <button type="button" class="btn-secondary" onClick={() => copy(phrase)}>
+            <button type="button" class="btn-tonal" onClick={() => copy(phrase)}>
               Copy the 12 words
             </button>
             <label class="toggle-row">
@@ -320,7 +316,7 @@ export function SyncSettings() {
             </label>
             {error && <div class="notice plain">{error}</div>}
             <div class="button-pair">
-              <button type="button" class="btn-secondary" disabled={busy} onClick={() => setMode('idle')}>
+              <button type="button" class="btn-tonal" disabled={busy} onClick={() => setMode('idle')}>
                 Cancel
               </button>
               <button type="button" class="btn-primary" disabled={!saved || busy} onClick={() => start(phrase, false)}>
@@ -361,7 +357,7 @@ export function SyncSettings() {
             </p>
             {error && <div class="notice plain">{error}</div>}
             <div class="button-pair">
-              <button type="button" class="btn-secondary" disabled={busy} onClick={() => setMode('idle')}>
+              <button type="button" class="btn-tonal" disabled={busy} onClick={() => setMode('idle')}>
                 Cancel
               </button>
               <button type="submit" class="btn-primary" disabled={!valid || busy}>
@@ -376,16 +372,13 @@ export function SyncSettings() {
 
   const config = loadSyncConfig();
   return (
-    <section class="card stack-12" aria-labelledby="sync-title">
-      <h2 id="sync-title" class="section-title">
-        Sync between devices
-      </h2>
+    <section class="page-section" aria-label="Sync between devices">
       <div class={`sync-status ${status.state}`} role="status">
         <span class="sync-dot" aria-hidden="true" />
         <span>{statusText(status)}</span>
       </div>
       <div class="button-pair">
-        <button type="button" class="btn-secondary" onClick={() => setMode(mode === 'show' ? 'idle' : 'show')}>
+        <button type="button" class="btn-tonal" onClick={() => setMode(mode === 'show' ? 'idle' : 'show')}>
           {mode === 'show' ? 'Hide sync key' : 'Show sync key'}
         </button>
         <button
@@ -409,7 +402,7 @@ export function SyncSettings() {
             enter these words.
           </p>
           <Words phrase={config.phrase} />
-          <button type="button" class="btn-secondary" onClick={() => copy(config.phrase)}>
+          <button type="button" class="btn-tonal" onClick={() => copy(config.phrase)}>
             Copy the 12 words
           </button>
         </>
@@ -433,7 +426,7 @@ export function SyncSettings() {
           onInput={(e) => setRelayText((e.target as HTMLTextAreaElement).value)}
         />
         <div class="button-pair">
-          <button type="button" class="btn-secondary" onClick={() => setRelayText(DEFAULT_RELAYS.join('\n'))}>
+          <button type="button" class="btn-tonal" onClick={() => setRelayText(DEFAULT_RELAYS.join('\n'))}>
             Defaults
           </button>
           <button
@@ -462,7 +455,7 @@ export function SyncSettings() {
             Claude connector address (or paste them in Claude Desktop, if you use it).
           </p>
           <Words phrase={phrase} />
-          <button type="button" class="btn-secondary" onClick={() => copy(phrase)}>
+          <button type="button" class="btn-tonal" onClick={() => copy(phrase)}>
             Copy the 12 words
           </button>
           <label class="toggle-row">
@@ -471,7 +464,7 @@ export function SyncSettings() {
           </label>
           {error && <div class="notice plain">{error}</div>}
           <div class="button-pair">
-            <button type="button" class="btn-secondary" disabled={busy} onClick={() => setMode('idle')}>
+            <button type="button" class="btn-tonal" disabled={busy} onClick={() => setMode('idle')}>
               Cancel
             </button>
             <button type="button" class="btn-primary" disabled={!saved || busy} onClick={changeKey}>

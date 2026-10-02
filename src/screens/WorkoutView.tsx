@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks';
+import { useMemo, useState } from 'preact/hooks';
 import type { Workout } from '../lib/types';
 import { putRoutine, sortedRoutines, useData } from '../lib/store';
 import { clockTime, durationWords, longDate } from '../lib/dates';
@@ -9,8 +9,8 @@ import { newRecords, workoutTotals } from '../lib/stats';
 import { fmtVolume } from '../lib/units';
 import { fmtSet, plural } from '../lib/format';
 import { positionBetween, routineFromWorkout } from '../lib/workout';
-import { TopBar } from '../components/Common';
-import { Pencil, Trash, Trophy } from '../components/Icons';
+import { ActionGroup, Sheet, SheetAction, TopBar } from '../components/Common';
+import { Copy, More, Pencil, Trash, Trophy } from '../components/Icons';
 import { recordText } from '../lib/records';
 
 /** A finished workout, to look at; Edit opens it in the workout screen. */
@@ -19,21 +19,28 @@ export function WorkoutView({ workout }: { workout: Workout }) {
   const { units } = data.settings;
   const t = workoutTotals(workout);
   const records = useMemo(() => newRecords(workout, data.workouts), [workout, data.workouts]);
+  const [menu, setMenu] = useState(false);
   return (
+    <>
     <main class="screen workout-view">
       <TopBar
         back="/history"
         right={
-          <a href={`#/workout/${workout.id}/edit`} class="icon-btn" aria-label="Edit workout">
-            <Pencil />
-          </a>
+          <div class="topbar-actions">
+            <a href={`#/workout/${workout.id}/edit`} class="icon-btn" aria-label="Edit workout">
+              <Pencil />
+            </a>
+            <button type="button" class="icon-btn" aria-label="More" onClick={() => setMenu(true)}>
+              <More />
+            </button>
+          </div>
         }
       />
       <header class="stack-4">
         <span class="eyebrow">
           {longDate(workout.date)} · {clockTime(workout.startedAt)}
         </span>
-        <h1 class="page-title">{workout.name}</h1>
+        <h1 class="page-title medium">{workout.name}</h1>
       </header>
       <dl class="card stat-grid">
         <div>
@@ -73,9 +80,11 @@ export function WorkoutView({ workout }: { workout: Workout }) {
 
       {workout.exercises.map((e) => (
         <section class="card stack-8" aria-labelledby={`v-${e.id}`}>
-          <a id={`v-${e.id}`} class="exercise-name" href={`#/exercise/${encodeURIComponent(e.exerciseId)}`}>
-            {e.name}
-          </a>
+          <h2 class="exercise-name">
+            <a id={`v-${e.id}`} href={`#/exercise/${encodeURIComponent(e.exerciseId)}`}>
+              {e.name}
+            </a>
+          </h2>
           {e.notes && <p class="muted small-text">{e.notes}</p>}
           <ol class="set-list">
             {e.sets.map((s, i) => (
@@ -95,31 +104,36 @@ export function WorkoutView({ workout }: { workout: Workout }) {
         </section>
       )}
 
-      <div class="button-pair">
-        <button
-          type="button"
-          class="btn-secondary"
+      <a href={`#/workout/${workout.id}/edit`} class="btn-tonal">
+        <Pencil size={18} />
+        Edit workout
+      </a>
+    </main>
+    <Sheet open={menu} onClose={() => setMenu(false)} title={workout.name}>
+      <ActionGroup>
+        <SheetAction
+          icon={<Copy size={20} />}
+          label="Save as a routine"
           onClick={() => {
+            setMenu(false);
             const last = sortedRoutines(data).at(-1);
             const r = putRoutine(routineFromWorkout(workout, positionBetween(last?.position, undefined)));
             showToast(`Saved as the routine “${r.name}”`, { label: 'Open', run: () => navigate(`/routine/${r.id}`) });
           }}
-        >
-          Save as routine
-        </button>
-        <a href={`#/workout/${workout.id}/edit`} class="btn-primary">
-          <Pencil size={18} />
-          Edit
-        </a>
-      </div>
-      <button
-        type="button"
-        class="link-btn left danger"
-        onClick={() => confirm(`Delete “${workout.name}” (${plural(t.sets, 'set')}) from your history?`) && discard(workout.id)}
-      >
-        <Trash size={18} />
-        Delete workout
-      </button>
-    </main>
+        />
+      </ActionGroup>
+      <ActionGroup>
+        <SheetAction
+          icon={<Trash />}
+          label="Delete workout"
+          danger
+          onClick={() => {
+            setMenu(false);
+            if (confirm(`Delete “${workout.name}” (${plural(t.sets, 'set')}) from your history?`)) discard(workout.id);
+          }}
+        />
+      </ActionGroup>
+    </Sheet>
+    </>
   );
 }

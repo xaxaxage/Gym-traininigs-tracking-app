@@ -18,7 +18,7 @@ async function device(ctx: BrowserContext): Promise<Page> {
   await stubNetwork(page);
   await page.goto('./');
   await page.evaluate(() => localStorage.clear());
-  await page.goto('./#/settings');
+  await page.goto('./#/settings/sync');
   await page.reload();
   return page;
 }
@@ -92,12 +92,12 @@ test('two devices: sync key, live updates, the workout in progress, devices and 
   await expect(phone.locator('.set-row.done')).toHaveCount(1, { timeout: 30_000 });
 
   // Devices: both listed; a new name travels.
-  await laptop.goto('./#/settings');
+  await laptop.goto('./#/settings/sync');
   await expect(laptop.getByRole('heading', { name: 'Devices (2)' })).toBeVisible({ timeout: 30_000 });
   await laptop.getByRole('button', { name: 'Rename this device' }).click();
   await laptop.getByLabel('Name for this device').fill('Gym laptop');
   await laptop.getByRole('button', { name: 'Save', exact: true }).click();
-  await phone.goto('./#/settings');
+  await phone.goto('./#/settings/sync');
   await expect(phone.getByText('Gym laptop')).toBeVisible({ timeout: 30_000 });
   await expect(phone.getByText(/^This device ·/)).toBeVisible();
 
