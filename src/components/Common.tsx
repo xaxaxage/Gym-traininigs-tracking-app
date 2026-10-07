@@ -5,9 +5,9 @@ import { dismissToast, useToast } from '../lib/toast';
 import { activeWorkout, useData } from '../lib/store';
 import { doneSetCount } from '../lib/workout';
 import { stopwatch } from '../lib/dates';
-import { ChevronLeft, ChevronRight, Close, Dumbbell, HistoryIcon, ListIcon, Play } from './Icons';
+import { ChartIcon, ChevronLeft, ChevronRight, Close, Dumbbell, HistoryIcon, Play } from './Icons';
 
-export type Tab = 'train' | 'history' | 'exercises';
+export type Tab = 'train' | 'history' | 'progress';
 
 /** The main tabs; with a workout in progress, a bar above them leads back to it. */
 export function BottomNav({ current }: { current: Tab }) {
@@ -24,9 +24,9 @@ export function BottomNav({ current }: { current: Tab }) {
             <HistoryIcon />
             History
           </a>
-          <a href="#/exercises" class="nav-link" aria-current={current === 'exercises' ? 'page' : undefined}>
-            <ListIcon />
-            Exercises
+          <a href="#/progress" class="nav-link" aria-current={current === 'progress' ? 'page' : undefined}>
+            <ChartIcon />
+            Progress
           </a>
         </div>
       </nav>

@@ -125,7 +125,7 @@ describe('backups', () => {
     expect(data.workouts).toHaveLength(1);
     expect(data.workouts[0].exercises[0].sets[0]).toEqual({ id: 's', done: false });
     expect(data.routines[0]).toMatchObject({ name: 'Routine', exercises: [] });
-    expect(data.settings).toMatchObject({ units: 'kg', restSeconds: 120, theme: 'harbor' });
+    expect(data.settings).toMatchObject({ units: 'kg', restSeconds: 120, theme: 'instrument' });
     expect(parseData(JSON.parse(JSON.stringify(emptyData())))).toEqual(emptyData());
   });
 });

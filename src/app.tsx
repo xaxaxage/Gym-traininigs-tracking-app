@@ -14,7 +14,8 @@ import { ExerciseDetail } from './screens/ExerciseDetail';
 import { CustomExerciseEditor } from './screens/CustomExercise';
 import { History } from './screens/History';
 import { WorkoutView } from './screens/WorkoutView';
-import { isSettingsPage, Settings } from './screens/Settings';
+import { isSettingsSection, Settings } from './screens/Settings';
+import { Progress } from './screens/Progress';
 
 function Missing({ message, home = '/' }: { message: string; home?: string }) {
   return (
@@ -99,7 +100,6 @@ export function App() {
         screen = target ? <Library pick={target} initialQuery={query.get('q') ?? ''} /> : <Missing message="Page not found." />;
       } else {
         screen = <Library initialQuery={query.get('q') ?? ''} />;
-        low = false;
       }
       break;
     case 'exercise':
@@ -122,9 +122,13 @@ export function App() {
       low = false;
       break;
     }
+    case 'progress':
+      screen = <Progress />;
+      low = false;
+      break;
     case 'settings':
       if (!segments[1]) screen = <Settings />;
-      else if (isSettingsPage(segments[1])) screen = <Settings page={segments[1]} />;
+      else if (isSettingsSection(segments[1])) screen = <Settings section={segments[1]} />;
       else screen = <Missing message="Page not found." home="/settings" />;
       break;
     default:

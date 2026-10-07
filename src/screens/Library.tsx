@@ -8,7 +8,7 @@ import { EQUIPMENT, EQUIPMENT_LABEL, GROUP_LABEL, GROUPS, groupsOf, MUSCLE_LABEL
 import { hiddenMatches, searchExercises, type SearchOptions } from '../lib/library/search';
 import { addExercises, lastSets, lastUsed, routineExercise, swapExercise } from '../lib/workout';
 import { plural } from '../lib/format';
-import { BottomNav, Loading, Sheet, Switch } from '../components/Common';
+import { Loading, Sheet, Switch, TopBar } from '../components/Common';
 import { Check, ChevronRight, Close, Filter, Plus, Search, Star } from '../components/Icons';
 import { requestScrollTo } from '../lib/scroll';
 
@@ -95,7 +95,7 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
 
   return (
     <>
-      <main class={`screen library${pick ? ' with-footer' : ' with-nav'}`}>
+      <main class={`screen library${pick ? ' with-footer' : ''}`}>
         {pick ? (
           <header class="topbar">
             <button type="button" class="icon-btn ink" aria-label="Cancel" onClick={() => goBack('/')}>
@@ -105,12 +105,15 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
             <span class="spacer-44" />
           </header>
         ) : (
-          <header class="page-head">
-            <h1 class="page-title">{title}</h1>
-            <a href="#/exercise/new" class="icon-btn" aria-label="New custom exercise">
-              <Plus />
-            </a>
-          </header>
+          <TopBar
+            title={title}
+            back="/progress"
+            right={
+              <a href="#/exercise/new" class="icon-btn" aria-label="New custom exercise">
+                <Plus />
+              </a>
+            }
+          />
         )}
 
         <div class="library-tools">
@@ -216,7 +219,6 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
           </div>
         </div>
       )}
-      {!pick && <BottomNav current="exercises" />}
 
       <Sheet open={filters} onClose={() => setFilters(false)} title="Filters">
         <div class="field">

@@ -11,7 +11,7 @@ test('export a backup, delete everything, and restore it', async ({ page }) => {
   await page.getByRole('button', { name: 'Start Full body A' }).click();
   await page.locator('.exercise-card').first().getByLabel('Set 1 weight in kg').fill('100');
   await page.locator('.check-btn').first().click();
-  await page.getByRole('button', { name: 'Finish' }).click();
+  await page.getByRole('button', { name: 'Finish', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Finish workout' }).click();
   await page.getByRole('button', { name: 'Done' }).click();
 

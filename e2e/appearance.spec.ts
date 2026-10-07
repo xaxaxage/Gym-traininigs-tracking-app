@@ -67,7 +67,7 @@ test('text is readable in every palette, on every main screen', async ({ page })
     await page.getByRole('button', { name: 'Start Full body A' }).click();
     await page.locator('.exercise-card').first().getByLabel('Set 1 weight in kg').fill(weight);
     await page.locator('.check-btn').first().click();
-    await page.getByRole('button', { name: 'Finish' }).click();
+    await page.getByRole('button', { name: 'Finish', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Finish workout' }).click();
     await expect(page.getByRole('heading', { name: 'Workout done' })).toBeVisible();
   }

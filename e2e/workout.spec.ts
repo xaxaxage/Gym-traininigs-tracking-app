@@ -90,7 +90,7 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await setRow(page, 'Dumbbell Lateral Raise', 1).getByRole('button', { name: /Complete set 1/ }).click();
 
   await later(page, '40:00');
-  await page.getByRole('button', { name: 'Finish' }).click();
+  await page.getByRole('button', { name: 'Finish', exact: true }).click();
   const sheet = page.getByRole('dialog', { name: 'Finish the workout?' });
   await expect(sheet).toContainText('3 sets not checked off are left out');
   await sheet.getByRole('button', { name: 'Finish workout' }).click();
@@ -115,7 +115,7 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await expect(field(page, 'Barbell Bench Press', 2, /weight/)).toHaveValue('62.5');
   await field(page, 'Barbell Bench Press', 1, /weight/).fill('65');
   await setRow(page, 'Barbell Bench Press', 1).getByRole('button', { name: /Complete set 1/ }).click();
-  await page.getByRole('button', { name: 'Finish' }).click();
+  await page.getByRole('button', { name: 'Finish', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Finish workout' }).click();
   const records = page.locator('.records-list');
   await expect(records).toContainText('Heaviest weight: 65 kg (was 62.5 kg)');
@@ -127,6 +127,43 @@ test('a whole workout: routine, sets, rest timer, reload, finish, history and re
   await expect(page.getByRole('group', { name: /Progress: best estimated 1-rep max/ })).toBeVisible();
   await page.getByRole('button', { name: 'Show the numbers' }).click();
   await expect(page.locator('.data-table').last()).toContainText('75.8');
+  expect(errors).toEqual([]);
+});
+
+test('one exercise per page: arrows, the overview, moving on when an exercise is done, and a reload', async ({ page }) => {
+  const errors = watchErrors(page);
+  await fresh(page);
+  await makeRoutine(page);
+  await page.getByRole('button', { name: 'Start Push day' }).click();
+  const here = () => page.locator('.pager-page[data-here] .exercise-name');
+  await expect(here()).toHaveText(/Barbell Bench Press$/);
+  await expect(page.getByRole('button', { name: /^Exercise 1 of 2/ })).toBeVisible();
+
+  // Arrows move between pages.
+  await page.getByRole('button', { name: 'Next exercise' }).click();
+  await expect(here()).toHaveText(/Dumbbell Lateral Raise$/);
+  await page.getByRole('button', { name: 'Previous exercise' }).click();
+  await expect(here()).toHaveText(/Barbell Bench Press$/);
+
+  // The overview jumps to an exercise.
+  await page.getByRole('button', { name: /All exercises/ }).click();
+  await page.getByRole('dialog').getByRole('button', { name: /Dumbbell Lateral Raise/ }).click();
+  await expect(here()).toHaveText(/Dumbbell Lateral Raise$/);
+
+  // Checking off the last set moves on — here, to the page that finishes the workout.
+  const raise = page.locator('.exercise-card', { has: page.getByRole('heading', { name: 'Dumbbell Lateral Raise' }) });
+  await raise.getByLabel('Set 1 weight in kg').fill('10');
+  const sets = await raise.locator('.set-row:not(.set-header)').count();
+  for (let i = 1; i <= sets; i++) {
+    await raise.getByLabel(`Set ${i} reps`).fill('12');
+    await raise.getByRole('button', { name: `Complete set ${i}` }).click();
+  }
+  await expect(page.locator('.pager-page[data-here] .workout-end')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Finish/ }).first()).toBeVisible();
+
+  // A reload comes back to the same page.
+  await page.reload();
+  await expect(page.locator('.pager-page[data-here] .workout-end')).toBeVisible();
   expect(errors).toEqual([]);
 });
 

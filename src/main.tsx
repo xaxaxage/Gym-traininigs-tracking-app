@@ -1,10 +1,11 @@
 import { render } from 'preact';
 import './styles.css';
 import './screens.css';
+import './workout.css';
 import './motion.css';
 import { App } from './app';
 import { initRouter } from './lib/router';
-import { activeWorkout, getData, subscribe } from './lib/store';
+import { activeWorkout, getData, subscribe, updateSettings } from './lib/store';
 import { applyTheme } from './lib/theme';
 import { watchMotion } from './lib/motion';
 import { keepScreenOn } from './lib/wakelock';
@@ -14,6 +15,17 @@ import { clearPreviews } from './lib/previews';
 
 // Back from a preview of an earlier design: drop what was changed in it.
 clearPreviews();
+
+// The instrument redesign: a device still on the old default palette (Harbor) moves to the new
+// default once. Anyone who picks Harbor again afterwards keeps it.
+try {
+  if (!localStorage.getItem('gym-tracker:design')) {
+    if (getData().settings.theme === 'harbor') updateSettings({ theme: 'instrument' });
+    localStorage.setItem('gym-tracker:design', 'instrument');
+  }
+} catch {
+  // Storage blocked: the default palette applies anyway.
+}
 
 // Keep the color palette in step with Settings.
 let shownTheme = '';

@@ -284,7 +284,6 @@ the feature branch). **One-time setup:** in the repository, **Settings → Pages
 - Exercises, instructions and photos: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) by yuhonas,
   released into the public domain under the [Unlicense](https://unlicense.org). Thank you! Names, aliases and a few
   extra exercises were added here.
-- Fonts: [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque) and
-  [Figtree](https://fonts.google.com/specimen/Figtree), SIL Open Font License.
+- Fonts: [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex), SIL Open Font License.
 - Sync, service worker, palettes, animations and the connector come from the
   [Calorie Tracker](https://github.com/xaxaxage/Calorie-tracking-web-app).

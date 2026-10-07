@@ -306,3 +306,15 @@ export const Grip = (p: IconProps) => (
     <path d="M5 9h14M5 15h14" />
   </Svg>
 );
+
+export const ChartIcon = (p: IconProps) => (
+  <Svg size={22} {...p}>
+    <path d="M4 20h16M7 16v-5M12 16V6M17 16v-8" />
+  </Svg>
+);
+
+export const Sparkle = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7L19 16z" />
+  </Svg>
+);

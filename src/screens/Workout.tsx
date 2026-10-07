@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { ComponentChildren } from 'preact';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { motionOn } from '../lib/motion';
 import type { LogType, Units, Workout, WorkoutExercise, WorkoutSet } from '../lib/types';
 import { finishedWorkouts, getData, prefFor, putWorkout, setPref, useData } from '../lib/store';
 import { clockTime, durationWords, fromKey, shortDate, stopwatch, toKey } from '../lib/dates';
@@ -33,6 +35,8 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
+  ListIcon,
   Info,
   More,
   Note,
@@ -60,6 +64,9 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
   const [finishing, setFinishing] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [workoutMenu, setWorkoutMenu] = useState(false);
+  const [overview, setOverview] = useState(false);
+  /** Moves the paged workout to an exercise (live workouts only). */
+  const pager = useRef<((index: number) => void) | null>(null);
   const [notesOpen, setNotesOpen] = useState<Set<string>>(new Set());
 
   useEffect(() => scrollToPending((id) => `ex-${id}`), []);
@@ -88,6 +95,11 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
     const nowDone = next.sets.find((x) => x.id === s.id)?.done;
     if (live && nowDone && data.settings.autoRest) {
       startRest(restFor_(e), `${e.name} · set ${index + 1}`, workout.id);
+    }
+    // The exercise is done: move on to the next one (or to Finish), after a moment to see the tick.
+    if (live && nowDone && next.sets.every((x) => x.done)) {
+      const at = getLatest(workout).exercises.findIndex((x) => x.id === e.id);
+      setTimeout(() => pager.current?.(at + 1), 700);
     }
   };
 
@@ -126,56 +138,80 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
 
         {!live && <WhenFields workout={workout} />}
 
-        {workout.exercises.length === 0 && (
-          <div class="empty-workout">
-            <span class="empty-icon" aria-hidden="true">
-              <Plus size={26} />
-            </span>
-            <p class="body-text center">
-              {live ? 'Add the exercises you are doing. Last time\'s numbers are filled in for you.' : 'This workout has no exercises.'}
-            </p>
-          </div>
-        )}
-
-        {workout.exercises.map((e, index) => (
-          <ExerciseCard
-            key={e.id}
-            e={e}
-            index={index}
-            units={units}
-            previous={lastSets(history, e.exerciseId, workout.startedAt)}
-            rest={live ? restFor_(e) : undefined}
-            notesOpen={notesOpen.has(e.id) || !!e.notes}
-            onChange={change}
-            onComplete={(s, i) => complete(e, s, i)}
-            onMenu={() => setMenu(e)}
-            onSetMenu={(s, i) => setSetMenuFor({ e, s, index: i })}
-            onRest={() => setRestFor(e)}
-            onNote={() => {
-              setNotesOpen(new Set([...notesOpen, e.id]));
-              requestAnimationFrame(() => document.getElementById(`note-${e.id}`)?.focus());
-            }}
-          />
-        ))}
-
-        <a href={pickHref()} class="btn-tonal add-exercises">
-          <Plus />
-          Add exercises
-        </a>
-
-        <section class="field workout-notes">
-          <label for="workout-notes" class="field-label">
-            Workout notes
-          </label>
-          <textarea
-            id="workout-notes"
-            class="input textarea"
-            rows={2}
-            placeholder="How did it go?"
-            value={workout.notes}
-            onInput={(ev) => save({ ...getLatest(workout), notes: (ev.target as HTMLTextAreaElement).value.slice(0, 4000) })}
-          />
-        </section>
+        {(() => {
+          const cards = workout.exercises.map((e, index) => (
+            <ExerciseCard
+              key={e.id}
+              e={e}
+              index={index}
+              units={units}
+              previous={lastSets(history, e.exerciseId, workout.startedAt)}
+              rest={live ? restFor_(e) : undefined}
+              notesOpen={notesOpen.has(e.id) || !!e.notes}
+              onChange={change}
+              onComplete={(s, i) => complete(e, s, i)}
+              onMenu={() => setMenu(e)}
+              onSetMenu={(s, i) => setSetMenuFor({ e, s, index: i })}
+              onRest={() => setRestFor(e)}
+              onNote={() => {
+                setNotesOpen(new Set([...notesOpen, e.id]));
+                requestAnimationFrame(() => document.getElementById(`note-${e.id}`)?.focus());
+              }}
+              page={live ? { number: index + 1, of: workout.exercises.length, next: workout.exercises[index + 1]?.name, onNext: () => pager.current?.(index + 1) } : undefined}
+            />
+          ));
+          const end = (
+            <section class={live ? 'workout-end' : 'stack-16'} aria-label={live ? 'Add exercises or finish' : undefined}>
+              {workout.exercises.length === 0 && (
+                <div class="empty-workout">
+                  <p class="body-text">
+                    {live ? "Add the exercises you're doing. Last time's numbers are filled in for you." : 'This workout has no exercises.'}
+                  </p>
+                </div>
+              )}
+              {live && workout.exercises.length > 0 && (
+                <div class="workout-end-head">
+                  <span class="eyebrow">After the last exercise</span>
+                  <h2 class="page-title medium">{done > 0 ? `${plural(done, 'set')} done` : 'Nothing checked off yet'}</h2>
+                </div>
+              )}
+              <a href={pickHref()} class="btn-tonal add-exercises">
+                <Plus />
+                Add exercises
+              </a>
+              <section class="field workout-notes">
+                <label for="workout-notes" class="field-label">
+                  Workout notes
+                </label>
+                <textarea
+                  id="workout-notes"
+                  class="input textarea"
+                  rows={2}
+                  placeholder="How did it go?"
+                  value={workout.notes}
+                  onInput={(ev) => save({ ...getLatest(workout), notes: (ev.target as HTMLTextAreaElement).value.slice(0, 4000) })}
+                />
+              </section>
+              {live && workout.exercises.length > 0 && (
+                <button type="button" class="btn-primary" onClick={() => setFinishing(true)}>
+                  <Check />
+                  Finish workout
+                </button>
+              )}
+            </section>
+          );
+          if (!live) return [...cards, end];
+          return (
+            <Pager
+              workoutId={workout.id}
+              exercises={workout.exercises}
+              api={pager}
+              onOverview={() => setOverview(true)}
+            >
+              {[...cards, end]}
+            </Pager>
+          );
+        })()}
 
       </main>
 
@@ -210,6 +246,45 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
             }}
           />
         </ActionGroup>
+      </Sheet>
+
+      <Sheet open={overview} onClose={() => setOverview(false)} title="Exercises in this workout">
+        <ol class="menu overview-list">
+          {workout.exercises.map((e, i) => {
+            const n = e.sets.filter((x) => x.done).length;
+            return (
+              <li>
+                <button
+                  type="button"
+                  class="sheet-action"
+                  onClick={() => {
+                    setOverview(false);
+                    pager.current?.(i);
+                  }}
+                >
+                  <span class="overview-index num">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="row-main">
+                    <span class="row-title">{e.name}</span>
+                  </span>
+                  <span class={`overview-done num${n === e.sets.length && n > 0 ? ' all' : ''}`}>
+                    {n}/{e.sets.length}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+        <div class="button-pair">
+          {workout.exercises.length > 1 && (
+            <button type="button" class="btn-tonal" onClick={() => (setOverview(false), setReorder(true))}>
+              Reorder
+            </button>
+          )}
+          <a href={pickHref()} class="btn-tonal">
+            <Plus />
+            Add
+          </a>
+        </div>
       </Sheet>
 
       <ExerciseMenu
@@ -429,6 +504,7 @@ function ExerciseCard({
   onSetMenu,
   onRest,
   onNote,
+  page,
 }: {
   e: WorkoutExercise;
   index: number;
@@ -442,6 +518,8 @@ function ExerciseCard({
   onSetMenu: (s: WorkoutSet, index: number) => void;
   onRest: () => void;
   onNote: () => void;
+  /** On its own page in a live workout: where it is, and what comes next. */
+  page?: { number: number; of: number; next?: string; onNext: () => void };
 }) {
   const fields = fieldsFor(e.logType);
   const allDone = e.sets.length > 0 && e.sets.every((s) => s.done);
@@ -450,7 +528,12 @@ function ExerciseCard({
   const hasPrev = previous.length > 0;
   const headingId = `ex-${e.id}`;
   return (
-    <section class={`card exercise-card${allDone ? ' all-done' : ''}`} aria-labelledby={headingId}>
+    <section class={`card exercise-card${allDone ? ' all-done' : ''}${page ? ' paged' : ''}`} aria-labelledby={headingId}>
+      {page && (
+        <span class="eyebrow num" aria-hidden="true">
+          Exercise {page.number} of {page.of}
+        </span>
+      )}
       <div class="exercise-head">
         <h2 class="exercise-name" id={headingId}>
           <a href={`#/exercise/${encodeURIComponent(e.exerciseId)}`}>
@@ -526,6 +609,13 @@ function ExerciseCard({
         <Plus size={18} />
         Add set
       </button>
+      {page && (
+        <button type="button" class={`page-next${allDone ? ' ready' : ''}`} onClick={page.onNext}>
+          <span class="page-next-label">{page.next ? 'Next' : 'Then'}</span>
+          <span class="page-next-name">{page.next ?? 'Finish or add more'}</span>
+          <ChevronRight size={20} />
+        </button>
+      )}
     </section>
   );
 }
@@ -744,5 +834,118 @@ function RestBar({ workoutId }: { workoutId: string }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * A live workout, one exercise per page: swipe or use the arrows, and the
+ * strip on top shows where you are and how far each exercise has got. The
+ * last page adds exercises and finishes. The page you're on is kept for this
+ * tab, so a reload comes back to it.
+ */
+function Pager({
+  workoutId,
+  exercises,
+  api,
+  onOverview,
+  children,
+}: {
+  workoutId: string;
+  exercises: WorkoutExercise[];
+  api: { current: ((index: number) => void) | null };
+  onOverview: () => void;
+  children: ComponentChildren[];
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const key = `gym-tracker:page:${workoutId}`;
+  const pages = children.length;
+  const [at, setAt] = useState(() => {
+    try {
+      const saved = Number(sessionStorage.getItem(key));
+      return Number.isInteger(saved) && saved >= 0 ? Math.min(saved, pages - 1) : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const current = useRef(at);
+
+  const remember = (i: number) => {
+    current.current = i;
+    setAt(i);
+    try {
+      sessionStorage.setItem(key, String(i));
+    } catch {
+      // The page just won't be remembered.
+    }
+  };
+
+  const go = (i: number, smooth = true) => {
+    const el = box.current;
+    if (!el) return;
+    const n = Math.max(0, Math.min(pages - 1, i));
+    el.scrollTo({ left: n * el.clientWidth, behavior: smooth && motionOn() ? 'smooth' : 'auto' });
+    if (n !== current.current) {
+      remember(n);
+      // A new page starts at its top.
+      if (window.scrollY > 0) window.scrollTo({ top: 0 });
+    }
+  };
+  api.current = go;
+
+  // Open on the page you were on; stay on it when the window changes size.
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    el.scrollLeft = current.current * el.clientWidth;
+    const keep = () => (el.scrollLeft = current.current * el.clientWidth);
+    window.addEventListener('resize', keep);
+    return () => window.removeEventListener('resize', keep);
+  }, []);
+  // An exercise removed from the end can leave you past the last page.
+  useEffect(() => {
+    if (current.current > pages - 1) go(pages - 1, false);
+  }, [pages]);
+
+  const onScroll = () => {
+    const el = box.current;
+    if (!el || el.clientWidth === 0) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== current.current && Math.abs(el.scrollLeft - i * el.clientWidth) < 2) {
+      remember(i);
+      if (window.scrollY > 0) window.scrollTo({ top: 0 });
+    }
+  };
+
+  const onEnd = at >= exercises.length;
+  return (
+    <>
+      <div class="pager-strip">
+        <button type="button" class="icon-btn" aria-label="Previous exercise" disabled={at === 0} onClick={() => go(at - 1)}>
+          <ChevronLeft />
+        </button>
+        <button type="button" class="pager-where" onClick={onOverview} aria-label={`Exercise ${Math.min(at + 1, exercises.length)} of ${exercises.length}. All exercises`}>
+          <ol class="pager-segments" aria-hidden="true">
+            {exercises.map((e, i) => {
+              const n = e.sets.filter((s) => s.done).length;
+              const state = n > 0 && n === e.sets.length ? 'done' : n > 0 ? 'part' : '';
+              return <li class={`${state}${i === at ? ' here' : ''}`} />;
+            })}
+            <li class={`end${onEnd ? ' here' : ''}`} />
+          </ol>
+          <span class="pager-count num">{onEnd ? 'Finish' : `${at + 1}/${exercises.length}`}</span>
+          <ListIcon size={18} />
+        </button>
+        <button type="button" class="icon-btn" aria-label="Next exercise" disabled={at >= pages - 1} onClick={() => go(at + 1)}>
+          <ChevronRight />
+        </button>
+      </div>
+      <div class="pager" ref={box} onScroll={onScroll}>
+        {children.map((child, i) => (
+          <div class="pager-page" data-here={i === at ? '' : undefined}>
+            {child}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

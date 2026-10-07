@@ -36,7 +36,7 @@ export async function noSidewaysScroll(page: Page, label: string) {
     const width = document.documentElement.clientWidth;
     const bad: string[] = [];
     for (const el of document.querySelectorAll<HTMLElement>('body *')) {
-      if (el.closest('.chip-row, .table-wrap, dialog:not([open]), .sr-only, svg') || el.offsetParent === null) continue;
+      if (el.closest('.chip-row, .pager, .table-wrap, dialog:not([open]), .sr-only, svg') || el.offsetParent === null) continue;
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
       if (r.right > width + 1 || r.left < -1) bad.push(`${el.tagName.toLowerCase()}.${el.className} (${Math.round(r.left)}–${Math.round(r.right)})`);

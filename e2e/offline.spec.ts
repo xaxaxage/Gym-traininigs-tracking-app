@@ -38,7 +38,8 @@ test('works offline after the first visit: the app, the exercise list and viewed
   await page.goto('./#/');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Train' })).toBeVisible();
-  await page.getByRole('link', { name: 'Exercises' }).click();
+  await page.getByRole('link', { name: 'Progress' }).click();
+  await page.getByRole('link', { name: 'All exercises' }).click();
   await page.getByLabel('Search exercises').fill('squat');
   await expect(page.locator('.exercise-row').first()).toContainText('Barbell Squat');
   await page.locator('.exercise-row').first().click();

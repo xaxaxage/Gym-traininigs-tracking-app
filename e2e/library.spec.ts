@@ -4,7 +4,8 @@ import { fresh, watchErrors } from './helpers';
 test('find exercises by search, alias and filter; favorite, hide and make your own @small', async ({ page }) => {
   const errors = watchErrors(page);
   await fresh(page);
-  await page.getByRole('link', { name: 'Exercises' }).click();
+  await page.getByRole('link', { name: 'Progress' }).click();
+  await page.getByRole('link', { name: 'All exercises' }).click();
   await expect(page.getByRole('heading', { name: 'Popular' })).toBeVisible();
   const search = page.getByLabel('Search exercises');
 

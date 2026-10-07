@@ -1,0 +1,334 @@
+/* ── The live workout: one exercise per page ──────────────────────────── */
+.workout-screen.live {
+  padding-bottom: calc(var(--safe-bottom) + 150px);
+  gap: 0;
+}
+.pager-strip {
+  position: sticky;
+  top: calc(var(--safe-top) + 57px);
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 4px calc(var(--gutter) - 10px);
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.pager-strip .icon-btn:disabled {
+  color: var(--disabled);
+}
+.pager-where {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  padding: 0 4px;
+}
+.pager-segments {
+  flex: 1;
+  display: flex;
+  gap: 3px;
+  list-style: none;
+  min-width: 0;
+}
+.pager-segments li {
+  flex: 1;
+  height: 4px;
+  background: var(--line-field);
+  min-width: 3px;
+}
+.pager-segments li.part {
+  background: linear-gradient(to right, var(--accent) 50%, var(--line-field) 50%);
+}
+.pager-segments li.done {
+  background: var(--accent);
+}
+.pager-segments li.end {
+  flex: 0 0 10px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-field);
+}
+.pager-segments li.here {
+  height: 8px;
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.pager-count {
+  font-size: 13px;
+  color: var(--ink);
+  min-width: 36px;
+  text-align: right;
+}
+.pager {
+  /* The containing block for what's positioned on the pages (screen-reader labels too):
+     without it they'd sit out past the window and widen the whole page. */
+  position: relative;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  margin: 0 calc(-1 * var(--gutter));
+  align-items: flex-start;
+}
+.pager::-webkit-scrollbar {
+  display: none;
+}
+.pager-page {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  padding: 20px var(--gutter) 24px;
+}
+
+/* An exercise on its page: room for the numbers. */
+.exercise-card.paged {
+  border: none;
+  padding: 0;
+  gap: 10px;
+}
+.paged .exercise-name {
+  font-size: var(--t-title);
+  letter-spacing: -0.01em;
+}
+.paged .exercise-head {
+  align-items: flex-start;
+}
+.paged .exercise-head .icon-btn {
+  margin-top: 0;
+}
+.paged .exercise-progress {
+  margin-top: 14px;
+}
+.paged .sets {
+  gap: 6px;
+  margin-top: 4px;
+}
+.paged .set-row {
+  grid-template-columns: 36px minmax(52px, 1fr) minmax(64px, 92px) minmax(56px, 76px) var(--tap-big);
+  gap: 8px;
+}
+.paged .no-prev .set-row,
+.paged.exercise-card .no-prev .set-row {
+  grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) var(--tap-big);
+}
+.paged .fields-1 .set-row {
+  grid-template-columns: 36px minmax(52px, 1fr) minmax(90px, 140px) var(--tap-big);
+}
+.paged .fields-1.no-prev .set-row {
+  grid-template-columns: 36px minmax(0, 1fr) var(--tap-big);
+}
+.paged .set-row:not(.set-header) {
+  border-top: 1px solid var(--divider);
+  padding-top: 6px;
+}
+.paged .num-input {
+  height: 56px;
+  font-size: 22px;
+}
+.paged .check-btn {
+  height: 56px;
+  width: var(--tap-big);
+}
+.paged .set-num {
+  font-size: 16px;
+}
+@container (max-width: 300px) {
+  .paged .set-row,
+  .paged .no-prev .set-row {
+    grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr) var(--tap);
+    gap: 4px;
+  }
+  .paged .fields-1 .set-row,
+  .paged .fields-1.no-prev .set-row {
+    grid-template-columns: 30px minmax(0, 1fr) var(--tap);
+  }
+  .paged .num-input {
+    font-size: 17px;
+  }
+  .paged .check-btn {
+    width: var(--tap);
+  }
+}
+.page-next {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  min-height: 64px;
+  padding: 10px 6px 10px 16px;
+  border: none;
+  border-radius: var(--r-md);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-field);
+  color: var(--ink);
+  text-align: left;
+}
+.page-next-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-cap);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.page-next-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.page-next.ready {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: none;
+}
+.page-next.ready .page-next-label {
+  color: inherit;
+  opacity: 0.7;
+}
+.workout-end {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.workout-end-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+.overview-list {
+  list-style: none;
+}
+.overview-index {
+  font-size: 12px;
+  color: var(--muted);
+  width: 22px;
+  flex-shrink: 0;
+}
+.overview-done {
+  font-size: 13px;
+  color: var(--muted);
+}
+.overview-done.all {
+  color: var(--success-ink);
+}
+
+/* The rest timer: a panel along the bottom, within thumb reach. */
+.rest-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: var(--surface);
+  border-top: 1px solid var(--line-field);
+  padding: 0 calc(var(--gutter) + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(var(--gutter) + var(--safe-left));
+}
+.rest-inner {
+  position: relative;
+  max-width: calc(var(--max-w) - 2 * var(--gutter));
+  margin: 0 auto;
+}
+.rest-bar.over {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-top-color: var(--accent);
+}
+.rest-progress {
+  position: absolute;
+  left: calc(-1 * var(--gutter));
+  right: calc(-1 * var(--gutter));
+  top: -1px;
+  height: 2px;
+  background: transparent;
+}
+.rest-progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 0.25s linear;
+}
+.rest-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+}
+.rest-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  align-items: center;
+}
+.rest-time {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  grid-row: 1 / 3;
+  grid-column: 1;
+  font-variant-numeric: tabular-nums;
+}
+.rest-label {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: var(--font-mono);
+  font-size: var(--t-cap);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+.rest-for {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: 13px;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rest-btn {
+  min-width: var(--tap-big);
+  height: var(--tap-big);
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px currentColor;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+.rest-btn.wide {
+  min-width: 64px;
+}
+@media (max-width: 380px) {
+  .rest-row {
+    flex-wrap: wrap;
+  }
+  .rest-text {
+    flex-basis: 100%;
+    margin-bottom: 8px;
+  }
+  .rest-btn {
+    flex: 1;
+  }
+}

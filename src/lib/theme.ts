@@ -85,11 +85,31 @@ const HARBOR_TOKENS: Tokens = {
  */
 const SERIES = { light: ['#2a78d6', '#eb6834'], dark: ['#3987e5', '#d95926'] };
 
-export const DEFAULT_THEME = 'harbor';
-/** Harbor in light mode, Night in dark mode. */
+export const DEFAULT_THEME = 'instrument';
+/** Paper in light mode, Instrument in dark mode. */
 export const AUTO_THEME = 'auto';
 
+/**
+ * Instrument: near-black, gray for actions, and one signal color (lime) for
+ * what's live — the set in progress, the rest timer, a set checked off.
+ */
+const INSTRUMENT_BASE: ThemeBase = { bg: '#0b0d0e', surface: '#131617', ink: '#e7e9e6', primary: '#dfe3df', accent: '#c9f24a', danger: '#ff6b5b' };
+/** Paper: the same instrument on white, with a signal orange. */
+const PAPER_BASE: ThemeBase = { bg: '#f3f3f0', surface: '#fbfbf9', ink: '#111314', primary: '#16191a', accent: '#ff5a1f', danger: '#c3281c' };
+
 export const PALETTES: Palette[] = [
+  {
+    id: 'instrument',
+    name: 'Instrument',
+    base: INSTRUMENT_BASE,
+    // Done is the signal color too: one color for "this happened".
+    tokens: { success: '#c9f24a', 'on-success': '#141a05', 'success-soft': '#252c14', 'success-ink': '#c9f24a' },
+  },
+  {
+    id: 'paper',
+    name: 'Paper',
+    base: PAPER_BASE,
+  },
   {
     id: 'harbor',
     name: 'Harbor',
@@ -138,8 +158,9 @@ export const PALETTES: Palette[] = [
   },
 ];
 
-export const HARBOR = PALETTES[0];
-const NIGHT = PALETTES.find((p) => p.id === 'night')!;
+export const HARBOR = PALETTES.find((p) => p.id === 'harbor')!;
+export const INSTRUMENT = PALETTES[0];
+const PAPER = PALETTES[1];
 
 // ── Color math ────────────────────────────────────────────────────────────
 
@@ -251,7 +272,8 @@ export function deriveTokens(input: ThemeBase): Tokens {
     'on-primary': textOn(primary),
     accent,
     'accent-strong': ensureContrast(dark ? accent : mix(accent, '#000000', 0.1), surface, 3),
-    'accent-ink': readable(accent, 4.6),
+    // Signal-colored text sits on cards, the page and its own soft tint.
+    'accent-ink': ensureContrast(readable(accent, 4.6), accentSoft, 4.6),
     'accent-soft': accentSoft,
     'accent-icon': ensureContrast(accent, accentSoft, 3.5),
     'accent-line': mix(surface, accent, 0.4),
@@ -310,15 +332,15 @@ export interface ThemeOutput {
 
 export function themeOutput(themeId: string): ThemeOutput {
   if (themeId === AUTO_THEME) {
-    const light = paletteTokens(HARBOR);
-    const dark = paletteTokens(NIGHT);
+    const light = paletteTokens(PAPER);
+    const dark = paletteTokens(INSTRUMENT);
     return {
       css: `${ROOT}{${block(light, false)}}@media (prefers-color-scheme: dark){${ROOT}{${block(dark, true)}}}`,
       bar: [light.bg, dark.bg],
       scheme: 'light dark',
     };
   }
-  return paletteOutput(findPalette(themeId) ?? HARBOR);
+  return paletteOutput(findPalette(themeId) ?? INSTRUMENT);
 }
 
 export function paletteOutput(palette: Pick<Palette, 'base' | 'tokens'>): ThemeOutput {

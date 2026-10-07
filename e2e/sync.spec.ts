@@ -54,7 +54,7 @@ test('two devices: sync key, live updates, the workout in progress, devices and 
   await phone.getByLabel('Set 1 weight in kg').fill('80');
   await phone.getByLabel('Set 1 reps').fill('8');
   await phone.locator('.check-btn').first().click();
-  await phone.getByRole('button', { name: 'Finish' }).click();
+  await phone.getByRole('button', { name: 'Finish', exact: true }).click();
   await phone.getByRole('dialog').getByRole('button', { name: 'Finish workout' }).click();
   await expect(phone.getByRole('heading', { name: 'Workout done' })).toBeVisible();
   // Uploaded a moment after the change (the month's part is new on the relay).
