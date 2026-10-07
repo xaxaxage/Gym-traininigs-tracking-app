@@ -27,6 +27,7 @@ import { workoutTotals } from '../lib/stats';
 import { fmtDuration, fmtVolume, restLabel } from '../lib/units';
 import { fmtSet, plural } from '../lib/format';
 import { scrollToPending } from '../lib/scroll';
+import { DescribeBox } from '../components/Describe';
 import { NumberInput, unitFor, type Field } from '../components/NumberInput';
 import { ActionGroup, Sheet, SheetAction, useElapsed } from '../components/Common';
 import {
@@ -175,6 +176,8 @@ export function WorkoutScreen({ workout }: { workout: Workout }) {
                   <h2 class="page-title medium">{done > 0 ? `${plural(done, 'set')} done` : 'Nothing checked off yet'}</h2>
                 </div>
               )}
+              {/* The new exercise takes this page's place, so it's what you see next. */}
+              {live && <DescribeBox target={{ kind: 'workout', workoutId: workout.id }} onAdded={() => window.scrollY > 0 && window.scrollTo({ top: 0 })} />}
               <a href={pickHref()} class="btn-tonal add-exercises">
                 <Plus />
                 Add exercises

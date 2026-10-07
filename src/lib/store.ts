@@ -24,21 +24,34 @@ import { DEFAULT_THEME, isThemeId } from './theme';
 
 export const STORAGE_KEY = 'gym-tracker:v1';
 
+export const DEFAULT_GEMINI_MODEL = 'gemini-flash-lite-latest';
+
 export const DEFAULT_SETTINGS: Settings = {
   units: 'kg',
   restSeconds: 120,
   autoRest: true,
   keepAwake: true,
+  library: 'full',
+  geminiKey: '',
+  geminiModel: DEFAULT_GEMINI_MODEL,
+  geminiModels: [],
+  geminiAutoSwitch: true,
   theme: DEFAULT_THEME,
   animations: true,
+  libraryOffered: false,
 };
+
+/** Gemini model IDs look like "gemini-3.5-flash-lite" or "gemma-3-27b-it". */
+export function isModelId(v: unknown): v is string {
+  return typeof v === 'string' && /^[a-z0-9][a-z0-9.\-]{1,79}$/i.test(v);
+}
 
 export function emptyMeta(): SyncMeta {
   return {
     deletedWorkouts: {},
     deletedRoutines: {},
     deletedExercises: {},
-    settingsAt: { units: 0, restSeconds: 0, autoRest: 0, keepAwake: 0 },
+    settingsAt: Object.fromEntries(SYNCED_SETTINGS.map((k) => [k, 0])) as SyncMeta['settingsAt'],
   };
 }
 
@@ -80,6 +93,22 @@ export function cleanSetting<K extends keyof SyncedSettings>(key: K, v: unknown)
       return (v === 'kg' || v === 'lb' ? v : undefined) as SyncedSettings[K] | undefined;
     case 'restSeconds':
       return (finite(v) && v >= 0 && v <= 3600 ? Math.round(v) : undefined) as SyncedSettings[K] | undefined;
+    case 'library':
+      return (v === 'full' || v === 'mine' ? v : undefined) as SyncedSettings[K] | undefined;
+    case 'geminiKey':
+      // A key is letters, digits and a few signs; anything else isn't one.
+      return (typeof v === 'string' && v.length <= 200 && /^[\w.\-]*$/.test(v.trim()) ? v.trim() : undefined) as SyncedSettings[K] | undefined;
+    case 'geminiModel':
+      return (isModelId(v) ? v : undefined) as SyncedSettings[K] | undefined;
+    case 'geminiModels':
+      return (
+        Array.isArray(v)
+          ? v
+              .filter((m) => m && isModelId(m.id))
+              .slice(0, 100)
+              .map((m) => ({ id: m.id, label: typeof m.label === 'string' && m.label.trim() ? m.label.trim().slice(0, 80) : m.id }))
+          : undefined
+      ) as SyncedSettings[K] | undefined;
     default:
       return (typeof v === 'boolean' ? v : undefined) as SyncedSettings[K] | undefined;
   }
@@ -93,6 +122,7 @@ export function cleanSettings(raw: any): Settings {
   }
   if (isThemeId(raw?.theme)) s.theme = raw.theme;
   if (typeof raw?.animations === 'boolean') s.animations = raw.animations;
+  if (typeof raw?.libraryOffered === 'boolean') s.libraryOffered = raw.libraryOffered;
   return s;
 }
 
@@ -322,9 +352,12 @@ export function updateSettings(patch: Partial<Settings>) {
 
 // ── Backups and deleting everything ───────────────────────────────────────
 
-/** Backup file contents. It never holds secrets: the sync key lives elsewhere (see sync/state.ts). */
+/**
+ * Backup file contents. It never holds secrets: the sync key lives elsewhere
+ * (see sync/state.ts), and the AI key is left out.
+ */
 export function backupJson(source: AppData = data): string {
-  return JSON.stringify({ app: 'gym-tracker', ...source }, null, 1);
+  return JSON.stringify({ app: 'gym-tracker', ...source, settings: { ...source.settings, geminiKey: '' } }, null, 1);
 }
 
 /**
@@ -333,7 +366,12 @@ export function backupJson(source: AppData = data): string {
  * other device's: the newest edit of each item wins.
  */
 export function restoreBackup(next: AppData) {
-  commit({ ...next, settings: { ...next.settings, theme: data.settings.theme, animations: data.settings.animations } });
+  // Backups have no AI key: keep this device's.
+  commit({
+    ...next,
+    settings: { ...next.settings, theme: data.settings.theme, animations: data.settings.animations, libraryOffered: data.settings.libraryOffered, geminiKey: data.settings.geminiKey },
+    meta: { ...next.meta, settingsAt: { ...next.meta.settingsAt, geminiKey: data.meta.settingsAt.geminiKey } },
+  });
 }
 
 /** Delete every workout, routine, custom exercise and preference (on every synced device, too). */

@@ -65,9 +65,11 @@ test('photos load only on an exercise page, and the page works without them', as
   await page.goto('./#/exercises');
   await expect(page.locator('.exercise-row').first()).toBeVisible();
   expect(photos).toEqual([]);
+  // The request event can come after the image is laid out, so wait for it.
+  const photo = page.waitForRequest((r) => r.url().includes('raw.githubusercontent.com'));
   await page.goto('./#/exercise/Barbell_Squat');
   await expect(page.getByRole('img', { name: /Barbell Squat: start position/ })).toBeVisible();
-  expect(photos[0]).toMatch(/free-exercise-db\/[0-9a-f]{40}\/exercises\/Barbell_Squat\/0\.jpg$/);
+  expect((await photo).url()).toMatch(/free-exercise-db\/[0-9a-f]{40}\/exercises\/Barbell_Squat\/0\.jpg$/);
 
   await page.unroute('https://raw.githubusercontent.com/**');
   await page.route('https://raw.githubusercontent.com/**', (r) => r.abort());

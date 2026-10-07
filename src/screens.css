@@ -2002,3 +2002,77 @@ a.setting > svg:last-child,
     min-width: 0;
   }
 }
+
+/* Describe an exercise to add it (workout end page, the picker) */
+.describe {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.library .describe {
+  margin-bottom: 4px;
+}
+.describe-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.describe-row .textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--btn-h);
+  resize: none;
+}
+.describe-go {
+  flex-shrink: 0;
+  width: auto;
+  padding: 0 16px;
+  gap: 6px;
+}
+.describe .field-hint[role='status'] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.spinner.small {
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+}
+.describe-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 10px 12px;
+  border-left: 2px solid var(--accent);
+}
+.review-facts {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.review-facts > div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--divider);
+}
+.review-facts dt {
+  font-family: var(--font-mono);
+  font-size: var(--t-cap);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding-top: 3px;
+}
+.review-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.only-mine p {
+  margin-bottom: 10px;
+}

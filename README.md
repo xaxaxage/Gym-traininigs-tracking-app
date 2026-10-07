@@ -12,7 +12,12 @@ and reuses its sync, service worker, palettes, animations, connector and deploy 
 
 - **Train** – start a routine with one tap, or an empty workout. A workout in progress stays one tap away from every
   screen. This week at a glance, and two starter plans (Full body A/B, Push · Pull · Legs) for an empty start.
-- **Workout** – exercise cards with their sets: weight × reps (or reps, time, distance — see below). Last time's
+- **Look** – "Instrument": dark and flat, hairline rules instead of cards, IBM Plex Sans for text and Plex Mono for
+  numbers and labels, and one lime accent kept for what's live (the set in progress, the rest timer, a set done).
+  Its light twin is Paper; Auto follows the system. The other palettes stay in Settings → Appearance.
+- **Workout** – one exercise per page: swipe or use the arrows; the strip on top shows where you are and how far
+  each exercise has got, and opens an overview to jump to one. Checking off an exercise's last set moves on to the
+  next; the last page adds exercises, takes notes and finishes. Each exercise has its sets: weight × reps (or reps, time, distance — see below). Last time's
   numbers are shown next to each set and filled in, so one tap on ✓ completes a set. Change a weight once and the
   sets below follow. Add or remove sets and exercises, reorder, swap an exercise, notes per exercise and for the
   workout. The time runs at the top. Every change is saved at once: closing the app, a crash or a reload never loses
@@ -22,24 +27,38 @@ and reuses its sync, service worker, palettes, animations, connector and deploy 
   app can't sound an alarm or vibrate while the phone is locked.
 - **Routines** – workout templates: a name and exercises in order with their planned sets (target reps and weight
   optional). Create, edit, reorder, duplicate, or save a finished workout as one.
+- **Add an exercise by describing it** – on the workout's last page (and at the top of the exercise picker) type
+  what you're doing, e.g. "Now I'm doing incline chest press on a machine, 3×10 at 40". With a free
+  [Gemini](https://aistudio.google.com/apikey) key, Gemini names it, fills in the muscles it works, the equipment
+  and how it's logged, and picks up the sets you mention; you check it in a sheet, and it's saved as your own
+  exercise (synced) and added as the next page, sets filled in but not checked off. Describing one you already have
+  adds that one instead of a copy. Without a key, the description is matched to the list, or you create the
+  exercise yourself. The Gemini code (as in the Calorie Tracker: the model picker, automatic switching when a model
+  is busy or out of free uses, a usage count) is only downloaded when first used.
 - **Exercise library** – 876 exercises from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) plus a
   few common ones it lacks (burpee, wall sit, kettlebell swing, Pendlay row…), with muscles, equipment, level,
   compound/isolation, step-by-step instructions and photos. About 150 popular ones come first; filters by muscle group
   (chest, back, shoulders, biceps, triceps, legs, glutes, core) and equipment; search understands common words and
   shorthand ("bench", "RDL", "pull-up" = "pullup" = "pull up", "db row", "kb swing", plurals). Recently done
   exercises and favorites rise to the top; hide the ones you never do. Make your own exercises — they sync.
+  After a few exercises of your own, the app offers once to switch to **only mine** (Settings → Exercises and AI →
+  Pick from): the picker then shows your own exercises plus the built-in ones you've already done, so their
+  history carries on, and nothing else.
 - **How an exercise is logged** – weight × reps, bodyweight reps (optionally with added weight), time, distance and
   time (cardio), or weight × distance (carries, sleds). Worked out from the dataset's category and equipment, with
   obvious mistakes fixed by hand (planks are timed, dips and pull-ups are bodyweight, farmer's walks are distance).
 - **Exercise page** – muscles, equipment, instructions, photos (start and end position), and your own history: a
   progress chart of the best estimated 1-rep max (Epley) and heaviest set per workout, personal records (heaviest
   weight, best estimated 1-rep max, most reps at each weight, most volume in one workout) and recent sets.
+- **Progress** – volume per week for the last seven weeks (tap a week for its workouts, sets and volume) and every
+  exercise you've done, with a small trend line, its best and the change since the start. The whole exercise list
+  opens from here.
 - **History** – past workouts as a list by month or a month calendar. Open one to look at it, edit it (sets, start
   time, duration) or delete it.
 - **Workout done** – duration, sets, volume and new records.
-- **Settings** – kg or lb (stored in kg, shown in your unit), the rest timer, appearance (ten palettes including
-  dark ones and Auto), animations on/off, sync, Use with Claude, backup export/import, delete everything, and the
-  version (build time · commit) at the bottom.
+- **Settings** – one page with sections: training (kg or lb, stored in kg; the rest timer; keep the screen on),
+  exercises and AI (all or only mine; the Gemini key and model), appearance, sync, Use with Claude, backup and data,
+  design versions, and about. `#/settings/<section>` opens at a section.
 
 Everything works offline once the app has been opened. Exercise photos load only on an exercise's page, from the
 dataset's pinned commit, and the ones you've looked at are kept for offline use; the app works fully without them.
@@ -195,11 +214,15 @@ Optional: `RELAYS` (space- or comma-separated `wss://` URLs) and `DEVICE_NAME`.
 
 ## Your data
 
+The Gemini key is a synced setting, so it travels to your other devices inside the encrypted sync and you enter it
+once. It's never written to a backup, and the Claude connector never passes it to Claude (its tools read only your unit from the settings). On
+Google's free tier Google may use what you send to improve its products; only the description you type is sent.
+
 There's no server and no account. Everything is one JSON record in the app's `localStorage` (`gym-tracker:v1`),
 saved on every change: workouts (with their exercises and sets), routines, custom exercises, library preferences
 and settings. Weights are stored in kg, distances in meters, times in seconds. If saving ever fails because the
 device is full, a red banner says so. **Export backup** saves all of it as a JSON file (it never contains the sync
-key); **Import backup** restores it on any device.
+key or the Gemini key); **Import backup** restores it on any device.
 
 The data model leaves room for what's planned next: supersets (exercises sharing a group), warm-up, drop and failure
 sets, RPE, programs with automatic progression (routines in a program), a plate calculator and body weight and

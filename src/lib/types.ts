@@ -172,9 +172,40 @@ export interface SyncedSettings {
   autoRest: boolean;
   /** Keep the screen awake during a workout, where the browser allows. */
   keepAwake: boolean;
+  /** Which exercises to pick from: the built-in list and your own, or only your own. */
+  library: LibraryMode;
+  /**
+   * Google AI Studio key for Gemini, which turns a description into an exercise. Synced
+   * (encrypted, like everything) so it's entered once; never in backups, never shown to Claude.
+   */
+  geminiKey: string;
+  /** Any Gemini API model ID. */
+  geminiModel: string;
+  /** The models the key can use, as Google listed them. */
+  geminiModels: GeminiModelInfo[];
+  /** When a model is busy or out of free uses, try the next one. */
+  geminiAutoSwitch: boolean;
 }
 
-export const SYNCED_SETTINGS: (keyof SyncedSettings)[] = ['units', 'restSeconds', 'autoRest', 'keepAwake'];
+export type LibraryMode = 'full' | 'mine';
+
+export interface GeminiModelInfo {
+  /** Model ID as used in API calls, e.g. "gemini-flash-lite-latest". */
+  id: string;
+  label: string;
+}
+
+export const SYNCED_SETTINGS: (keyof SyncedSettings)[] = [
+  'units',
+  'restSeconds',
+  'autoRest',
+  'keepAwake',
+  'library',
+  'geminiKey',
+  'geminiModel',
+  'geminiModels',
+  'geminiAutoSwitch',
+];
 
 /** Settings for this device only (a phone can be dark while a computer stays light). */
 export interface DeviceSettings {
@@ -182,6 +213,8 @@ export interface DeviceSettings {
   theme: string;
   /** Gentle motion (also off when the system asks for reduced motion). */
   animations: boolean;
+  /** Whether "use only your own exercises?" was offered on this device (answered or dismissed). */
+  libraryOffered: boolean;
 }
 
 export type Settings = SyncedSettings & DeviceSettings;

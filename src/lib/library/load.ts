@@ -39,6 +39,20 @@ export function builtinExercise(id: string): Exercise | undefined {
   return byId?.get(id);
 }
 
+/**
+ * What you pick from. Everything, or with Settings → "Pick from: Mine" your
+ * own exercises plus the built-in ones you've already used — so a past
+ * exercise keeps its history instead of coming back as a copy.
+ */
+export function pickable(data: Pick<AppData, 'customExercises' | 'settings' | 'workouts' | 'routines'>, list: Exercise[]): Exercise[] {
+  const all = allExercises(data, list);
+  if (data.settings.library !== 'mine') return all;
+  const used = new Set<string>();
+  for (const w of data.workouts) for (const e of w.exercises) used.add(e.exerciseId);
+  for (const r of data.routines) for (const e of r.exercises) used.add(e.exerciseId);
+  return all.filter((e) => e.custom || used.has(e.id));
+}
+
 /** Built-in and custom exercises, custom ones first. */
 export function allExercises(data: Pick<AppData, 'customExercises'>, list: Exercise[] = builtin ?? []): Exercise[] {
   return [...data.customExercises.map(fromCustom), ...list];

@@ -3,7 +3,7 @@ import type { Equipment, MuscleGroup } from '../lib/types';
 import { finishedWorkouts, getData, getRoutine, getWorkout, putRoutine, putWorkout, useData } from '../lib/store';
 import { goBack, href, navigate } from '../lib/router';
 import { showToast } from '../lib/toast';
-import { allExercises, useLibrary } from '../lib/library/load';
+import { pickable, useLibrary } from '../lib/library/load';
 import { EQUIPMENT, EQUIPMENT_LABEL, GROUP_LABEL, GROUPS, groupsOf, MUSCLE_LABEL, type Exercise } from '../lib/library/catalog';
 import { hiddenMatches, searchExercises, type SearchOptions } from '../lib/library/search';
 import { addExercises, lastSets, lastUsed, routineExercise, swapExercise } from '../lib/workout';
@@ -11,6 +11,7 @@ import { plural } from '../lib/format';
 import { Loading, Sheet, Switch, TopBar } from '../components/Common';
 import { Check, ChevronRight, Close, Filter, Plus, Search, Star } from '../components/Icons';
 import { requestScrollTo } from '../lib/scroll';
+import { DescribeBox } from '../components/Describe';
 
 export type PickTarget =
   | { kind: 'workout'; workoutId: string; swap?: string }
@@ -34,9 +35,10 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
   const recent = useMemo(() => lastUsed(data.workouts), [data.workouts]);
   const favorites = useMemo(() => new Set(data.prefs.filter((p) => p.favorite).map((p) => p.id)), [data.prefs]);
   const hidden = useMemo(() => new Set(data.prefs.filter((p) => p.hidden).map((p) => p.id)), [data.prefs]);
+  const mine = data.settings.library === 'mine';
   const all = useMemo(
-    () => (lib.state === 'ready' ? allExercises(data, lib.exercises) : []),
-    [lib.state, data.customExercises],
+    () => (lib.state === 'ready' ? pickable(data, lib.exercises) : []),
+    [lib.state, data.customExercises, data.settings.library, data.workouts, data.routines],
   );
   const opts: SearchOptions = { group, equipment, recent, favorites, hidden, includeHidden, onlyFavorites };
   const filtered = !!(query.trim() || group || equipment || onlyFavorites);
@@ -88,7 +90,7 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
   };
 
   const sections =
-    lib.state === 'ready' && !filtered ? browseSections(all, recent, favorites, hidden) : null;
+    lib.state === 'ready' && !filtered ? browseSections(all, recent, favorites, hidden, mine) : null;
 
   const title = pick ? (swapping ? 'Swap exercise' : 'Add exercises') : 'Exercises';
   const createHref = `#${href('/exercise/new', { name: query.trim(), to: pick && !swapping ? pickParam(pick) : undefined })}`;
@@ -113,6 +115,16 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
                 <Plus />
               </a>
             }
+          />
+        )}
+
+        {pick && !swapping && (
+          <DescribeBox
+            target={pick.kind === 'workout' ? { kind: 'workout', workoutId: pick.workoutId } : { kind: 'routine', routineId: pick.routineId }}
+            onAdded={(id) => {
+              requestScrollTo(id);
+              goBack(pick.kind === 'workout' ? `/workout/${pick.workoutId}` : `/routine/${pick.routineId}`);
+            }}
           />
         )}
 
@@ -167,6 +179,12 @@ export function Library({ pick, initialQuery = '' }: { pick?: PickTarget; initia
           </div>
         )}
 
+        {sections && sections.length === 0 && (
+          <p class="body-text muted" role="status">
+            No exercises of your own yet.{' '}
+            {pick ? 'Describe the one you’re doing above, or create it below.' : 'Create one below, or add them by describing them during a workout.'}
+          </p>
+        )}
         {sections &&
           sections.map((s) => (
             <section class="stack-8" aria-label={s.title}>
@@ -271,8 +289,8 @@ interface Section {
   items: Exercise[];
 }
 
-/** Without a search: recent, favorites, popular, then everything A–Z. */
-function browseSections(all: Exercise[], recent: Map<string, number>, favorites: Set<string>, hidden: Set<string>): Section[] {
+/** Without a search: recent, favorites, yours, popular, then everything A–Z. With only your own: no popular, and the built-in ones you've used. */
+function browseSections(all: Exercise[], recent: Map<string, number>, favorites: Set<string>, hidden: Set<string>, mine: boolean): Section[] {
   const visible = all.filter((e) => !hidden.has(e.id));
   const byId = new Map(visible.map((e) => [e.id, e]));
   const recentItems = [...recent.entries()]
@@ -287,8 +305,9 @@ function browseSections(all: Exercise[], recent: Map<string, number>, favorites:
   if (recentItems.length) out.push({ title: 'Recent', items: recentItems });
   if (fav.length) out.push({ title: 'Favorites', items: fav });
   if (custom.length) out.push({ title: 'Your exercises', items: custom });
-  out.push({ title: 'Popular', items: popular });
-  out.push({ title: 'All exercises', items: visible.filter((e) => !e.custom) });
+  const builtins = visible.filter((e) => !e.custom);
+  if (!mine) out.push({ title: 'Popular', items: popular });
+  if (!mine || builtins.length) out.push({ title: mine ? 'Used before' : 'All exercises', items: builtins });
   return out;
 }
 
