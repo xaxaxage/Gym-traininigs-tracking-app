@@ -256,15 +256,19 @@ copy (keys starting `gym-tracker:preview:`), which the current version throws aw
 a preview (it can't see your sync key or open a connection), and it installs no service worker, so the current
 version's offline files stay as they are. The current version's service worker leaves `versions/` alone.
 
-**Save the current design as a version** by tagging its commit `design-` something, with a short description as
-the message, and pushing the tag. The next deploy includes it:
+**Save the current design as a version** by adding its commit to `design-versions.json` (newest first), or by
+tagging the commit `design-` something with a short description as the message. The next deploy includes it:
+
+```json
+{ "name": "design-v3", "commit": "<commit sha>", "label": "Bigger buttons, darker cards" }
+```
 
 ```bash
-git tag -a design-v3 -m "Bigger buttons, darker cards"
+git tag -a design-v3 -m "Bigger buttons, darker cards"   # or, as a tag
 git push origin design-v3
 ```
 
-`scripts/build-versions.mjs` builds each `design-*` tag from its own checkout (in `.versions/`, with its own
+`scripts/build-versions.mjs` builds each saved version from its own checkout (in `.versions/`, with its own
 dependencies) into `dist/versions/<tag>/`, injects `scripts/preview-shim.js` at the top of its page, removes its service
 worker, and writes the list to `dist/versions.json`. To go back to a saved design for good, merge or revert in git —
 the tags are also the versions to return to.

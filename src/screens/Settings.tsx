@@ -299,8 +299,8 @@ function DesignVersions() {
         kept, and sync is off. Back in this version, everything is as you left it.
       </div>
       <p class="group-note">
-        To save the current design as a version, tag its commit <code>design-…</code> with a short description — see “Design
-        versions” in the README.
+        To save the current design as a version, add its commit to <code>design-versions.json</code> — see “Design versions”
+        in the README.
       </p>
     </>
   );

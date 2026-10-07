@@ -4,7 +4,8 @@
  * can open them from Settings → Design versions and you can compare them
  * with the current one, using your own data (see scripts/preview-shim.js).
  *
- * A saved version is a git tag named design-*, with its description as the
+ * A saved version is an entry in design-versions.json (a name, a commit and a
+ * description), or a git tag named design-* with its description as the
  * tag's message:
  *
  *     git tag -a design-v3 -m "Bigger buttons, darker cards"
@@ -28,16 +29,24 @@ if (!existsSync(join(dist, 'index.html'))) {
   process.exit(1);
 }
 
-// Tags, newest first, with their message, date and commit.
+// Saved versions: the ones listed in design-versions.json, then any git tag named design-*.
+const NAME = /^design-[\w.-]+$/;
+const listed = JSON.parse(readFileSync(join(repo, 'design-versions.json'), 'utf8')).versions ?? [];
+const fromFile = listed.map((v) => {
+  if (!NAME.test(v.name)) throw new Error(`design-versions.json: "${v.name}" must be named design-something`);
+  const commit = git('rev-parse', '--verify', `${v.commit}^{commit}`);
+  return { tag: v.name, label: v.label || v.name, date: git('show', '-s', '--format=%cs', commit), commit };
+});
 const SEP = '\u001f';
-const tags = git('tag', '--list', 'design-*', '--sort=-creatordate', `--format=%(refname:short)${SEP}%(contents:subject)${SEP}%(creatordate:short)`)
+const fromTags = git('tag', '--list', 'design-*', '--sort=-creatordate', `--format=%(refname:short)${SEP}%(contents:subject)${SEP}%(creatordate:short)`)
   .split('\n')
   .filter(Boolean)
   .map((line) => {
     const [tag, subject, date] = line.split(SEP);
     return { tag, label: subject || tag, date, commit: git('rev-list', '-n', '1', tag) };
   })
-  .filter((t) => /^design-[\w.-]+$/.test(t.tag));
+  .filter((t) => NAME.test(t.tag) && !fromFile.some((f) => f.tag === t.tag));
+const tags = [...fromFile, ...fromTags];
 
 const shim = readFileSync(join(repo, 'scripts', 'preview-shim.js'), 'utf8');
 const out = join(dist, 'versions');
