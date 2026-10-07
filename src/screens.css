@@ -47,9 +47,9 @@
   list-style: none;
 }
 .tags li {
-  padding: 4px 8px;
-  border-radius: var(--r-xs);
-  box-shadow: inset 0 0 0 1px var(--line-field);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--sunken);
   color: var(--ink-2);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -493,13 +493,17 @@ dialog.sheet::backdrop {
 .quick-start-icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--r-sm);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--on-accent);
   flex-shrink: 0;
+}
+.card + .quick-start,
+.card + .card {
+  border-top: none;
 }
 .quick-start .row-title {
   font-weight: 600;
@@ -578,17 +582,18 @@ dialog.sheet::backdrop {
 .week-days li {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: var(--t-cap);
   text-align: center;
   color: var(--muted);
 }
 .week-dot {
-  height: 26px;
-  border-radius: var(--r-xs);
-  background: var(--sunken);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--quiet);
 }
 .week-days li.on .week-dot {
   background: var(--accent);
@@ -597,12 +602,12 @@ dialog.sheet::backdrop {
   color: var(--ink);
   font-weight: 600;
 }
-.week-days li.today .week-dot {
-  box-shadow: inset 0 0 0 1px var(--ink);
+.week-days li.today:not(.on) .week-dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
 }
 .week-days li.later .week-dot {
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: var(--sunken);
 }
 .routine-list {
   display: flex;
@@ -811,10 +816,9 @@ h2.exercise-name:not(:has(a)) {
   gap: 6px;
   min-height: var(--tap);
   padding: 0 12px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   border: none;
-  box-shadow: inset 0 0 0 1px var(--line-field);
-  background: transparent;
+  background: var(--sunken);
   color: var(--ink-2);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -921,10 +925,11 @@ button.set-num {
   min-width: 0;
   height: 48px;
   padding: 0 4px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
   border: none;
-  box-shadow: inset 0 0 0 1px var(--line-field);
-  background: var(--surface);
+  /* A number you can change: just a line under it */
+  box-shadow: inset 0 -1.5px 0 var(--line-field);
+  background: transparent;
   text-align: center;
   font-family: var(--font-mono);
   font-size: 18px;
@@ -936,10 +941,11 @@ button.set-num {
   appearance: none;
 }
 .num-input:focus {
-  box-shadow: inset 0 0 0 2px var(--ink);
+  background: var(--sunken);
+  box-shadow: inset 0 -2px 0 var(--ink);
 }
 .num-input.invalid {
-  box-shadow: inset 0 0 0 2px var(--danger);
+  box-shadow: inset 0 -2px 0 var(--danger);
 }
 .num-input::placeholder {
   color: var(--faint);
@@ -952,10 +958,10 @@ button.set-num {
 .check-btn {
   width: var(--tap-big);
   height: 48px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   border: none;
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line-field);
+  box-shadow: inset 0 0 0 1.5px var(--line-field);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -1220,7 +1226,6 @@ button.set-num {
   flex-shrink: 0;
 }
 .pill.has-filter {
-  box-shadow: inset 0 0 0 1px var(--ink);
   color: var(--ink);
 }
 .exercise-row {
@@ -1241,19 +1246,17 @@ button.set-num {
   color: var(--accent-icon);
 }
 .pick-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--r-xs);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 0 1px var(--line-field);
   color: var(--muted);
   flex-shrink: 0;
 }
 .pick-mark.on {
   background: var(--accent);
-  box-shadow: none;
   color: var(--on-accent);
 }
 .list-more {
@@ -1839,8 +1842,7 @@ a.setting > svg:last-child,
 }
 .connector-url {
   padding: 10px 12px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: var(--sunken);
   border-radius: var(--r-sm);
   font-size: 12px;
   line-height: 1.5;
@@ -1930,7 +1932,6 @@ a.setting > svg:last-child,
   border: none;
   border-radius: var(--r-sm);
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink);
   text-align: left;
 }
@@ -1957,7 +1958,7 @@ a.setting > svg:last-child,
   align-items: flex-end;
   height: 44px;
   padding: 8px 6px 0;
-  border-radius: 2px;
+  border-radius: 8px;
   overflow: hidden;
 }
 .swatch-card {

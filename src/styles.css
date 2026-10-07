@@ -123,11 +123,11 @@
   --t-sub: 14px;
   --t-cap: 11px;
 
-  --r-xs: 2px;
-  --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 6px;
-  --r-xl: 8px;
+  --r-xs: 4px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 22px;
   --r-pill: 999px;
 
   --shadow-card: none;
@@ -325,8 +325,7 @@ input[type='search']::-webkit-search-cancel-button {
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0 14px;
-  border-bottom: 1px solid var(--line);
+  padding: 10px 0 6px;
 }
 .page-head > div {
   min-width: 0;
@@ -416,7 +415,7 @@ input[type='search']::-webkit-search-cancel-button {
   padding: 0;
 }
 .icon-btn.filled {
-  box-shadow: inset 0 0 0 1px var(--line-field);
+  color: var(--ink-2);
 }
 .icon-btn.ink {
   color: var(--ink);
@@ -466,9 +465,8 @@ input[type='search']::-webkit-search-cancel-button {
   color: var(--danger);
 }
 .btn-secondary {
-  background: transparent;
+  background: var(--sunken);
   color: var(--ink);
-  box-shadow: inset 0 0 0 1px var(--line-field);
 }
 .btn-secondary:disabled {
   color: var(--disabled);
@@ -480,6 +478,7 @@ input[type='search']::-webkit-search-cancel-button {
   min-height: var(--tap);
   padding: 0 16px;
   border-radius: var(--r-sm);
+  font-weight: 600;
   font-size: 15px;
 }
 .link-btn {
@@ -515,13 +514,12 @@ input[type='search']::-webkit-search-cancel-button {
 .pill {
   min-height: var(--tap);
   padding: 0 14px;
-  border-radius: var(--r-sm);
+  border-radius: var(--r-pill);
   font-size: var(--t-sub);
   font-weight: 500;
   background: transparent;
-  color: var(--ink-2);
+  color: var(--muted);
   border: none;
-  box-shadow: inset 0 0 0 1px var(--line-field);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -531,7 +529,7 @@ input[type='search']::-webkit-search-cancel-button {
 .pill[aria-pressed='true'] {
   background: var(--ink);
   color: var(--bg);
-  box-shadow: none;
+  font-weight: 600;
 }
 
 /* Fixed bottom call-to-action */
@@ -727,15 +725,15 @@ a.setting {
   padding: 0 14px;
   border-radius: var(--r-sm);
   border: none;
-  box-shadow: inset 0 0 0 1px var(--line-field);
-  background: var(--surface);
+  box-shadow: none;
+  background: var(--sunken);
   font-size: var(--t-body);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
 }
 .input:focus {
-  box-shadow: inset 0 0 0 1px var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink-2);
 }
 .input::placeholder {
   color: var(--muted);
@@ -785,10 +783,10 @@ a.setting {
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
-  gap: 0;
+  gap: 2px;
+  padding: 3px;
   border-radius: var(--r-sm);
-  box-shadow: inset 0 0 0 1px var(--line-field);
-  overflow: hidden;
+  background: var(--sunken);
 }
 .segmented button {
   min-height: var(--tap);
@@ -799,9 +797,7 @@ a.setting {
   background: transparent;
   color: var(--muted);
   padding: 0 8px;
-}
-.segmented button + button {
-  box-shadow: inset 1px 0 0 var(--line-field);
+  border-radius: 8px;
 }
 .segmented button[aria-pressed='true'] {
   background: var(--ink);
