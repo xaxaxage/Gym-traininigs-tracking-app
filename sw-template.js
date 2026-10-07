@@ -59,6 +59,9 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   // Downloads for other apps (the Claude Desktop extension) always come fresh from the server.
   if (url.pathname.includes('/mcp/')) return;
+  // Saved design versions (Settings → Design versions) are separate pages with their
+  // own files: never cached here, and never stored as this version's app page.
+  if (url.pathname.includes('/versions/') || url.pathname.endsWith('/versions.json')) return;
 
   if (request.mode === 'navigate') {
     // Network first for the page itself so updates arrive; cached copy when offline.

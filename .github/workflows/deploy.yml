@@ -18,6 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The saved design versions are tags; each one is built from its own commit.
+          fetch-depth: 0
+          fetch-tags: true
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -25,6 +29,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Build the saved design versions (Settings → Design versions)
+        run: npm run build:versions
       - name: Build the online Claude connector (as Vercel builds it)
         run: npm run build:cloud
       - name: Test the built connectors (HTTP and stdio) against a local relay

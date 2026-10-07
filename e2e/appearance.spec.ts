@@ -76,7 +76,7 @@ test('text is readable in every palette, on every main screen', async ({ page })
   await page.getByRole('button', { name: 'Start Full body B' }).click();
   await page.locator('.exercise-card').first().getByLabel('Set 1 weight in kg').fill('100');
   await page.locator('.check-btn').first().click();
-  const screens = ['/', '/workout', '/exercises', '/exercise/Barbell_Squat', '/history', '/history?view=calendar', '/settings', '/settings/appearance', '/settings/sync', '/settings/claude', '/settings/data', summary];
+  const screens = ['/', '/workout', '/exercises', '/exercise/Barbell_Squat', '/history', '/history?view=calendar', '/settings', '/settings/appearance', '/settings/sync', '/settings/claude', '/settings/data', '/settings/versions', summary];
 
   const failures: string[] = [];
   for (const id of PALETTES) {

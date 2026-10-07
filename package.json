@@ -13,7 +13,8 @@
     "dataset:update": "node scripts/update-dataset.mjs",
     "build:mcp": "vite build -c vite.mcp.config.ts",
     "build:cloud": "vite build -c vite.cloud.config.ts",
-    "test:built": "vitest run -c vitest.built.config.ts"
+    "test:built": "vitest run -c vitest.built.config.ts",
+    "build:versions": "node scripts/build-versions.mjs"
   },
   "dependencies": {
     "@scure/bip39": "^2.4.0",

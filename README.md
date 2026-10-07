@@ -216,6 +216,7 @@ npm test             # unit tests (Vitest, jsdom)
 npm run build        # typecheck, the app in dist/, and the Claude Desktop extension in dist/mcp/
 npm run build:cloud  # the online connector for Vercel, in .vercel/output/
 npm run test:built   # the built connectors over HTTP and stdio
+npm run build:versions  # the saved design versions into dist/versions/ (after npm run build)
 npm run test:e2e     # Playwright against the production build (vite preview), iPhone sizes and desktop
 node scripts/validate-mcpb.mjs   # checks the extension with @anthropic-ai/mcpb, installed in a temp folder
 ```
@@ -234,7 +235,7 @@ hand-made additions in `data/curation.ts` (popular list, clearer names, aliases,
 src/
   app.tsx, main.tsx       routes and start-up
   screens/                Train, Workout, Summary, RoutineEditor, Library, ExerciseDetail, CustomExercise,
-                          History, WorkoutView, Settings (+ Appearance, Sync, Claude)
+                          History, WorkoutView, Settings (+ Appearance, Sync, Claude, Design versions)
   components/             icons, sheets, number fields, the progress chart (lazy)
   lib/                    store, schema (validation), workout logic, stats (e1RM, records), units, timer,
                           wake lock, theme, motion, router, starters
@@ -245,10 +246,33 @@ plugins/, data/           the exercise library build and its pinned data
 tests/, e2e/              unit tests; Playwright tests (local mock relay, never public relays)
 ```
 
+## Design versions
+
+To compare designs, earlier ones stay inside the app: **Settings → Design versions** lists them, and each opens as a
+preview over your own workouts, with a bar at the top that leads back.
+
+**A preview never changes your data.** It reads what's on the device, but everything it writes goes to a separate
+copy (keys starting `gym-tracker:preview:`), which the current version throws away when you come back. Sync is off in
+a preview (it can't see your sync key or open a connection), and it installs no service worker, so the current
+version's offline files stay as they are. The current version's service worker leaves `versions/` alone.
+
+**Save the current design as a version** by tagging its commit `design-` something, with a short description as
+the message, and pushing the tag. The next deploy includes it:
+
+```bash
+git tag -a design-v3 -m "Bigger buttons, darker cards"
+git push origin design-v3
+```
+
+`scripts/build-versions.mjs` builds each `design-*` tag from its own checkout (in `.versions/`, with its own
+dependencies) into `dist/versions/<tag>/`, injects `scripts/preview-shim.js` at the top of its page, removes its service
+worker, and writes the list to `dist/versions.json`. To go back to a saved design for good, merge or revert in git —
+the tags are also the versions to return to.
+
 ## Deploy
 
 `.github/workflows/deploy.yml` runs the unit tests, builds the app and both connectors, tests the built connectors,
-validates the extension, runs the Playwright tests and deploys `dist/` to GitHub Pages on every push to `main` (and to
+validates the extension, builds the saved design versions, runs the Playwright tests and deploys `dist/` to GitHub Pages on every push to `main` (and to
 the feature branch). **One-time setup:** in the repository, **Settings → Pages → Source: GitHub Actions**.
 
 ## Credits

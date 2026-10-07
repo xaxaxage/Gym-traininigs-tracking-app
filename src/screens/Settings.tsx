@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact';
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { backupJson, clearAll, finishedWorkouts, parseBackup, restoreBackup, updateSettings, useData } from '../lib/store';
 import { todayKey } from '../lib/dates';
 import { saveFile } from '../lib/files';
@@ -10,18 +10,19 @@ import { DATASET } from '../lib/library/catalog';
 import { AUTO_THEME, HARBOR, PALETTES } from '../lib/theme';
 import { useSyncStatus } from '../lib/sync/state';
 import { Segmented, Switch, TopBar } from '../components/Common';
-import { Archive, Chat, ChevronRight, Download, Info, Minus, Palette, Plus, SyncIcon, Trash, Upload } from '../components/Icons';
+import { Archive, Chat, ChevronRight, Download, HistoryIcon as History, Info, Minus, Palette, Plus, SyncIcon, Trash, Upload } from '../components/Icons';
 import { AppearanceSettings } from './AppearanceSettings';
 import { SyncSettings } from './SyncSettings';
 import { ClaudeSettings } from './ClaudeSettings';
 
-export type SettingsPage = 'appearance' | 'sync' | 'claude' | 'data' | 'about';
+export type SettingsPage = 'appearance' | 'sync' | 'claude' | 'data' | 'versions' | 'about';
 
 export const SETTINGS_PAGES: Record<SettingsPage, string> = {
   appearance: 'Appearance',
   sync: 'Sync between devices',
   claude: 'Use with Claude',
   data: 'Backup and data',
+  versions: 'Design versions',
   about: 'About',
 };
 
@@ -39,6 +40,7 @@ export function Settings({ page }: { page?: SettingsPage }) {
         {page === 'sync' && <SyncSettings />}
         {page === 'claude' && <ClaudeSettings />}
         {page === 'data' && <DataSettings />}
+        {page === 'versions' && <DesignVersions />}
         {page === 'about' && <About />}
       </main>
     );
@@ -126,6 +128,7 @@ function SettingsHome() {
       <section class="group-section" aria-label="Data and about">
         <div class="group">
           <LinkRow href="#/settings/data" icon={<Archive size={18} />} tone="ink" label="Backup and data" value={plural(finishedWorkouts(data).length, 'workout')} />
+          <LinkRow href="#/settings/versions" icon={<History size={18} />} tone="ink" label="Design versions" />
           <LinkRow href="#/settings/about" icon={<Info size={18} />} tone="ink" label="About and installing" />
         </div>
       </section>
@@ -222,6 +225,83 @@ function DataSettings() {
         </div>
         <p class="group-note">Also on your other devices, if sync is on.</p>
       </section>
+    </>
+  );
+}
+
+export interface SavedVersion {
+  tag: string;
+  label: string;
+  date: string;
+  commit: string;
+}
+
+type VersionList = { state: 'loading' } | { state: 'ready'; versions: SavedVersion[] } | { state: 'error' };
+
+/**
+ * Earlier designs, built next to the app by scripts/build-versions.mjs. Each
+ * opens as a preview that reads your data but keeps nothing it changes.
+ */
+function DesignVersions() {
+  const [list, setList] = useState<VersionList>({ state: 'loading' });
+  useEffect(() => {
+    let live = true;
+    fetch('./versions.json', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((json: { versions?: SavedVersion[] }) => live && setList({ state: 'ready', versions: Array.isArray(json.versions) ? json.versions : [] }))
+      .catch(() => live && setList({ state: 'error' }));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const [when, commit] = __APP_VERSION__.split(' · ');
+
+  return (
+    <>
+      <p class="lead">Open an earlier design to compare it with this one, using your own workouts and routines.</p>
+      <section class="group-section" aria-labelledby="versions-title">
+        <h2 id="versions-title" class="list-label">
+          Versions
+        </h2>
+        <ul class="group">
+          <li class="setting">
+            <span class="setting-label">
+              This version
+              <span class="muted">
+                {when}
+                {commit ? ` · ${commit}` : ''}
+              </span>
+            </span>
+            <span class="badge">In use</span>
+          </li>
+          {list.state === 'ready' &&
+            list.versions.map((v) => (
+              <li>
+                <a class="setting" href={`./versions/${encodeURIComponent(v.tag)}/`} aria-label={`Open ${v.label} (${v.tag})`}>
+                  <span class="setting-label">
+                    {v.label}
+                    <span class="muted">
+                      {v.tag} · {v.date} · {v.commit}
+                    </span>
+                  </span>
+                  <span class="setting-value">Open</span>
+                  <ChevronRight size={18} />
+                </a>
+              </li>
+            ))}
+        </ul>
+        {list.state === 'loading' && <p class="group-note">Looking for saved versions…</p>}
+        {list.state === 'ready' && list.versions.length === 0 && <p class="group-note">No earlier versions are saved in this build.</p>}
+        {list.state === 'error' && <p class="group-note">The list of versions couldn't be loaded. It needs a connection.</p>}
+      </section>
+      <div class="notice info plain">
+        <strong>Your data is safe in a preview.</strong> It shows your workouts as they are now, but nothing you change there is
+        kept, and sync is off. Back in this version, everything is as you left it.
+      </div>
+      <p class="group-note">
+        To save the current design as a version, tag its commit <code>design-…</code> with a short description — see “Design
+        versions” in the README.
+      </p>
     </>
   );
 }

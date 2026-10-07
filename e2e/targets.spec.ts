@@ -8,7 +8,7 @@ test('touch targets are at least 44 px on every main screen @small', async ({ pa
   await page.getByRole('button', { name: /Full body/ }).click();
   await page.getByRole('button', { name: 'Start Full body A' }).click();
   await page.locator('.check-btn').first().click();
-  const screens = ['/', '/workout', '/exercises', '/exercise/Barbell_Squat', '/history', '/history?view=calendar', '/settings', '/settings/appearance', '/settings/sync', '/settings/claude', '/settings/data', '/settings/about', '/exercise/new'];
+  const screens = ['/', '/workout', '/exercises', '/exercise/Barbell_Squat', '/history', '/history?view=calendar', '/settings', '/settings/appearance', '/settings/sync', '/settings/claude', '/settings/data', '/settings/versions', '/settings/about', '/exercise/new'];
   const small: string[] = [];
   for (const s of screens) {
     await page.goto(`./#${s}`);

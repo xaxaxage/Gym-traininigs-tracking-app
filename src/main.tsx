@@ -10,6 +10,10 @@ import { watchMotion } from './lib/motion';
 import { keepScreenOn } from './lib/wakelock';
 import { registerServiceWorker } from './lib/updates';
 import { loadSyncConfig } from './lib/sync/state';
+import { clearPreviews } from './lib/previews';
+
+// Back from a preview of an earlier design: drop what was changed in it.
+clearPreviews();
 
 // Keep the color palette in step with Settings.
 let shownTheme = '';

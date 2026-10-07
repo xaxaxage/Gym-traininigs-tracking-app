@@ -2127,3 +2127,15 @@ a.setting > svg:last-child {
 .setting-button.danger .setting-label {
   color: var(--danger);
 }
+.badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--success-soft);
+  color: var(--success-ink);
+  font-size: var(--t-cap);
+  font-weight: 700;
+}
+ul.group {
+  list-style: none;
+}
