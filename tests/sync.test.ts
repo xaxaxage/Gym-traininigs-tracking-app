@@ -158,7 +158,7 @@ describe('merging two devices', () => {
     const merged = syncInto(phone, laptop);
     expect(merged.settings).toMatchObject({ units: 'lb', restSeconds: 90 });
     // The look is per device: it never syncs.
-    expect(merged.settings.theme).toBe('instrument');
+    expect(merged.settings.theme).toBe('harbor');
     expect(syncInto(laptop, phone).settings).toMatchObject({ units: 'lb', restSeconds: 90, theme: 'night' });
   });
 

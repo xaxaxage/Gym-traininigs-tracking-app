@@ -12,9 +12,8 @@ and reuses its sync, service worker, palettes, animations, connector and deploy 
 
 - **Train** – start a routine with one tap, or an empty workout. A workout in progress stays one tap away from every
   screen. This week at a glance, and two starter plans (Full body A/B, Push · Pull · Legs) for an empty start.
-- **Look** – "Instrument": dark and flat, hairline rules instead of cards, IBM Plex Sans for text and Plex Mono for
-  numbers and labels, and one lime accent kept for what's live (the set in progress, the rest timer, a set done).
-  Its light twin is Paper; Auto follows the system. The other palettes stay in Settings → Appearance.
+- **Look** – warm and calm (Harbor by default, Night in dark mode with Auto), Bricolage Grotesque for headings and
+  Figtree for text. Instrument, a dark flat look with a lime accent, and its light twin Paper are among the palettes.
 - **Workout** – one exercise per page: swipe or use the arrows; the strip on top shows where you are and how far
   each exercise has got, and opens an overview to jump to one. Checking off an exercise's last set moves on to the
   next; the last page adds exercises, takes notes and finishes. Each exercise has its sets: weight × reps (or reps, time, distance — see below). Last time's
@@ -307,6 +306,7 @@ the feature branch). **One-time setup:** in the repository, **Settings → Pages
 - Exercises, instructions and photos: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) by yuhonas,
   released into the public domain under the [Unlicense](https://unlicense.org). Thank you! Names, aliases and a few
   extra exercises were added here.
-- Fonts: [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex), SIL Open Font License.
+- Fonts: [Bricolage Grotesque](https://fonts.google.com/specimen/Bricolage+Grotesque) and
+  [Figtree](https://fonts.google.com/specimen/Figtree), SIL Open Font License.
 - Sync, service worker, palettes, animations and the connector come from the
   [Calorie Tracker](https://github.com/xaxaxage/Calorie-tracking-web-app).

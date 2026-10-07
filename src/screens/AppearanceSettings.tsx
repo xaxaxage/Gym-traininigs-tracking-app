@@ -1,5 +1,5 @@
 import { updateSettings, useData } from '../lib/store';
-import { AUTO_THEME, INSTRUMENT, PALETTES, type ThemeBase } from '../lib/theme';
+import { AUTO_THEME, HARBOR, PALETTES, type ThemeBase } from '../lib/theme';
 import { systemReducesMotion } from '../lib/motion';
 import { Switch } from '../components/Common';
 import { Check } from '../components/Icons';
@@ -21,11 +21,11 @@ export function Swatch({ base }: { base: ThemeBase }) {
 }
 
 function AutoSwatch() {
-  const paper = PALETTES.find((p) => p.id === 'paper')!;
+  const night = PALETTES.find((p) => p.id === 'night')!;
   return (
     <span class="swatch-split" aria-hidden="true">
-      <Swatch base={paper.base} />
-      <Swatch base={INSTRUMENT.base} />
+      <Swatch base={HARBOR.base} />
+      <Swatch base={night.base} />
     </span>
   );
 }
@@ -34,11 +34,11 @@ function AutoSwatch() {
 export function AppearanceSettings() {
   const { theme, animations } = useData().settings;
   const options = [
-    ...PALETTES.slice(0, 2).map((p) => ({ id: p.id, name: p.name, swatch: <Swatch base={p.base} /> })),
+    { id: HARBOR.id, name: HARBOR.name, swatch: <Swatch base={HARBOR.base} /> },
     { id: AUTO_THEME, name: 'Auto', swatch: <AutoSwatch /> },
-    ...PALETTES.slice(2).map((p) => ({ id: p.id, name: p.name, swatch: <Swatch base={p.base} /> })),
+    ...PALETTES.filter((p) => p !== HARBOR).map((p) => ({ id: p.id, name: p.name, swatch: <Swatch base={p.base} /> })),
   ];
-  const selected = options.some((o) => o.id === theme) ? theme : INSTRUMENT.id;
+  const selected = options.some((o) => o.id === theme) ? theme : HARBOR.id;
   const reduced = systemReducesMotion();
 
   return (
@@ -60,8 +60,8 @@ export function AppearanceSettings() {
         </div>
         <p class="group-note">
           {selected === AUTO_THEME
-            ? 'Auto uses Paper by day and Instrument when your device is in dark mode.'
-            : 'Instrument, Night, Espresso and OLED black are dark. The palette is kept on this device only.'}
+            ? 'Auto uses Harbor by day and Night when your device is in dark mode.'
+            : 'Night, Espresso, OLED black and Instrument are dark. The palette is kept on this device only.'}
         </p>
       </section>
       <section class="group-section" aria-label="Motion">

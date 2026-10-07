@@ -1,6 +1,7 @@
 {
   "$comment": "Saved designs, shown in Settings → Design versions (newest first). Each is built from its commit by scripts/build-versions.mjs. A git tag named design-* with a message adds one too.",
   "versions": [
+    { "name": "design-v3", "commit": "1e72d68e3bc0cf55b739c3b9e578ad649956d55f", "label": "Instrument: dark, flat, lime accent" },
     { "name": "design-v2", "commit": "9b4e4fecaeeed7496d56ff23d559b4e6ab177bdb", "label": "Calmer redesign: grouped menus, quieter workout cards" },
     { "name": "design-v1", "commit": "b0a6a7a61e70d76ed8fab33f4531452acfa0b4aa", "label": "Original look" }
   ]

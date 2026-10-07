@@ -16,12 +16,12 @@ import { clearPreviews } from './lib/previews';
 // Back from a preview of an earlier design: drop what was changed in it.
 clearPreviews();
 
-// The instrument redesign: a device still on the old default palette (Harbor) moves to the new
-// default once. Anyone who picks Harbor again afterwards keeps it.
+// Back from the instrument look: a device that was moved to Instrument when it became the
+// default goes back to Harbor once. Anyone who picks Instrument afterwards keeps it.
 try {
-  if (!localStorage.getItem('gym-tracker:design')) {
-    if (getData().settings.theme === 'harbor') updateSettings({ theme: 'instrument' });
-    localStorage.setItem('gym-tracker:design', 'instrument');
+  if (localStorage.getItem('gym-tracker:design') !== 'harbor') {
+    if (localStorage.getItem('gym-tracker:design') === 'instrument' && getData().settings.theme === 'instrument') updateSettings({ theme: 'harbor' });
+    localStorage.setItem('gym-tracker:design', 'harbor');
   }
 } catch {
   // Storage blocked: the default palette applies anyway.

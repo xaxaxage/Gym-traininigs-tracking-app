@@ -304,7 +304,7 @@ function About() {
           </a>
           , with clearer names, search words and a few extra exercises added.
         </p>
-        <p class="body-text">Fonts: IBM Plex Sans and IBM Plex Mono (SIL Open Font License).</p>
+        <p class="body-text">Fonts: Bricolage Grotesque and Figtree (SIL Open Font License).</p>
       </details>
       <p class="app-version">Version {__APP_VERSION__}</p>
     </>

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { AUTO_THEME, contrast, deriveTokens, HARBOR, INSTRUMENT, isThemeId, luminance, PALETTES, paletteTokens, themeOutput, TOKEN_NAMES, type Tokens } from '../src/lib/theme';
+import { AUTO_THEME, contrast, deriveTokens, HARBOR, isThemeId, luminance, PALETTES, paletteTokens, themeOutput, TOKEN_NAMES, type Tokens } from '../src/lib/theme';
 import { parseData } from '../src/lib/store';
 
 /** The pairs people actually read: text on its background, labels on buttons. */
@@ -29,12 +29,12 @@ function readability(t: Tokens) {
 }
 
 describe('palettes', () => {
-  it('Instrument (the default) matches the stylesheet defaults exactly', () => {
+  it('Harbor (the default) matches the stylesheet defaults exactly', () => {
     const css = readFileSync('src/styles.css', 'utf8');
     const root = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')));
     for (const name of TOKEN_NAMES) {
       const m = new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, 'i').exec(root);
-      expect(m?.[1]?.toLowerCase(), name).toBe(paletteTokens(INSTRUMENT)[name]);
+      expect(m?.[1]?.toLowerCase(), name).toBe(paletteTokens(HARBOR)[name]);
     }
   });
 
@@ -61,11 +61,11 @@ describe('palettes', () => {
     const out = themeOutput(AUTO_THEME);
     expect(out.css).toContain('@media (prefers-color-scheme: dark)');
     expect(out.scheme).toBe('light dark');
-    expect(out.bar).toEqual([PALETTES.find((p) => p.id === 'paper')!.base.bg, INSTRUMENT.base.bg]);
+    expect(out.bar).toEqual([HARBOR.base.bg, PALETTES.find((p) => p.id === 'night')!.base.bg]);
   });
 
-  it('falls back to Instrument (the default) for an unknown palette', () => {
-    expect(themeOutput('gone').css).toBe(themeOutput('instrument').css);
+  it('falls back to Harbor (the default) for an unknown palette', () => {
+    expect(themeOutput('gone').css).toBe(themeOutput('harbor').css);
     expect(isThemeId('night')).toBe(true);
     expect(isThemeId('x;}body{display:none')).toBe(false);
   });
@@ -77,6 +77,6 @@ describe('palettes', () => {
   });
 
   it('never lets a saved palette inject CSS', () => {
-    expect(parseData({ version: 1, settings: { theme: 'x;}body{display:none' } }).settings.theme).toBe('instrument');
+    expect(parseData({ version: 1, settings: { theme: 'x;}body{display:none' } }).settings.theme).toBe('harbor');
   });
 });
