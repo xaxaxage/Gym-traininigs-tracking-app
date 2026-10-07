@@ -75,14 +75,15 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match('./').then((hit) => hit || Response.error())),
+        .catch(() => caches.match('./', { ignoreVary: true }).then((hit) => hit || Response.error())),
     );
     return;
   }
 
-  // Build assets have content hashes in their names, so cache first is safe.
+  // Build assets have content hashes in their names, so cache first is safe — whatever the
+  // request's headers (a server's "Vary: Origin" mustn't make a cached file unusable offline).
   event.respondWith(
-    caches.match(request, { ignoreSearch: true }).then(
+    caches.match(request, { ignoreSearch: true, ignoreVary: true }).then(
       (hit) =>
         hit ||
         fetch(request).then((response) => {
