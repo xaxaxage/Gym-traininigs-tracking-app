@@ -37,13 +37,20 @@ export function Progress() {
           </div>
         </header>
 
-        <section class="stack-12" aria-labelledby="volume-title">
-          <div class="week-head">
-            <h2 id="volume-title" class="list-label">
-              Volume per week
-            </h2>
-            <span class="muted num" aria-live="polite">
-              {picked === weeks.length - 1 ? 'This week' : `Week of ${shortDate(week.start)}`} · {fmtVolume(week.volume, units)}
+        <section class="card volume-card" aria-labelledby="volume-title">
+          <h2 id="volume-title" class="card-title">
+            Volume per week
+          </h2>
+          <div class="volume-now" aria-live="polite">
+            <span class="eyebrow">{picked === weeks.length - 1 ? 'This week' : `Week of ${shortDate(week.start)}`}</span>
+            <span class="volume-value num">{fmtVolume(week.volume, units)}</span>
+            <span class="stat-line">
+              <span>
+                <strong>{week.workouts}</strong> {week.workouts === 1 ? 'workout' : 'workouts'}
+              </span>
+              <span>
+                <strong>{week.sets}</strong> sets
+              </span>
             </span>
           </div>
           <ol class="week-bars" style={`--weeks:${weeks.length}`} aria-label="Volume per week, oldest first">
@@ -56,7 +63,7 @@ export function Progress() {
                   aria-label={`Week of ${shortDate(w.start)}: ${fmtVolume(w.volume, units)}, ${plural(w.workouts, 'workout')}, ${plural(w.sets, 'set')}`}
                   onClick={() => setPicked(i)}
                 >
-                  <span class="week-bar" style={{ height: `${Math.max(2, (w.volume / max) * 100)}%` }} />
+                  <span class="week-bar" style={{ height: `${Math.max(3, (w.volume / max) * 100)}%` }} />
                 </button>
                 <span class="week-bar-label" aria-hidden="true">
                   {shortDate(w.start).replace(/^\w+ /, '')}
@@ -64,19 +71,11 @@ export function Progress() {
               </li>
             ))}
           </ol>
-          <p class="stat-line">
-            <span>
-              <strong>{week.workouts}</strong> {week.workouts === 1 ? 'workout' : 'workouts'}
-            </span>
-            <span>
-              <strong>{week.sets}</strong> sets
-            </span>
-          </p>
         </section>
 
         <section class="stack-12" aria-labelledby="ex-title">
           <div class="section-head">
-            <h2 id="ex-title" class="list-label">
+            <h2 id="ex-title" class="section-title">
               Exercises
             </h2>
             <a href="#/exercises" class="link-btn muted">
@@ -101,7 +100,7 @@ export function Progress() {
             </div>
           )}
           {exercises.length === 0 ? (
-            <p class="notice info plain">Finish a workout and every exercise in it shows up here, with its best and how it's moving.</p>
+            <p class="card empty-note">Finish a workout and every exercise in it shows up here, with its best and how it's moving.</p>
           ) : shown.length === 0 ? (
             <p class="list-empty">No exercise matches “{query.trim()}”.</p>
           ) : (

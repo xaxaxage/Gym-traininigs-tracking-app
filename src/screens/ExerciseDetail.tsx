@@ -259,7 +259,7 @@ function History({ sessions, logType, units }: { sessions: Session[]; logType: L
         <h2 id="yours-title" class="section-title">
           Your history
         </h2>
-        <p class="notice info plain">Once you've done this exercise, your records, progress and recent sets show up here.</p>
+        <p class="card empty-note">Once you've done this exercise, your records, progress and recent sets show up here.</p>
       </section>
     );
   }

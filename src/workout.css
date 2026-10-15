@@ -104,7 +104,7 @@
   letter-spacing: -0.01em;
 }
 .paged .exercise-head {
-  align-items: flex-start;
+  align-items: center;
 }
 .paged .sets {
   gap: 8px;
@@ -238,5 +238,5 @@
   color: var(--muted);
 }
 .overview-done.all {
-  color: var(--success-ink);
+  color: var(--primary);
 }

@@ -229,8 +229,8 @@ function WeekStrip({ workouts, today }: { workouts: Workout[]; today: string }) 
       <ol class="week-days" aria-hidden="true">
         {days.map((d) => (
           <li class={`${trained.has(d) ? 'on' : ''}${d === today ? ' today' : ''}${d > today ? ' later' : ''}`}>
-            <span class="week-dot" />
             <span class="week-letter">{shortWeekday(d).slice(0, 1)}</span>
+            <span class="week-dot num">{Number(d.slice(8))}</span>
           </li>
         ))}
       </ol>
@@ -274,7 +274,7 @@ function RoutineCard({
           {plural(routine.exercises.length, 'exercise')} · {plural(sets, 'set')}
           {last && <span class="routine-last"> · {ago(last.date, todayKey())}</span>}
         </p>
-        <button type="button" class="btn-tonal btn-small" onClick={onStart} aria-label={`Start ${routine.name}`} disabled={routine.exercises.length === 0}>
+        <button type="button" class="btn-primary btn-small" onClick={onStart} aria-label={`Start ${routine.name}`} disabled={routine.exercises.length === 0}>
           <Play size={15} />
           Start
         </button>

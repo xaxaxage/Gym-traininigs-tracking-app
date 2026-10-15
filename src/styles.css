@@ -100,7 +100,7 @@
   --r-xl: 22px;
   --r-pill: 999px;
 
-  --shadow-card: 0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent);
+  --shadow-card: 0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent), 0 8px 24px -12px color-mix(in srgb, var(--ink) 14%, transparent);
   --shadow-float: 0 10px 30px color-mix(in srgb, var(--ink) 20%, transparent), 0 2px 6px color-mix(in srgb, var(--ink) 8%, transparent);
   --shadow-accent: 0 6px 16px color-mix(in srgb, var(--accent-strong) 35%, transparent);
 
@@ -273,7 +273,7 @@ input[type='search']::-webkit-search-cancel-button {
   margin: 0 -10px;
 }
 .topbar h1 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 17px;
   font-weight: 700;
   text-align: center;
@@ -322,7 +322,7 @@ input[type='search']::-webkit-search-cancel-button {
   color: var(--muted);
 }
 .section-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--t-head);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -338,11 +338,9 @@ input[type='search']::-webkit-search-cancel-button {
 }
 .list-label {
   padding: 0 4px;
-  font-size: var(--t-cap);
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 .stack-4,
 .stack-8,
@@ -384,7 +382,7 @@ input[type='search']::-webkit-search-cancel-button {
 }
 .icon-btn.filled {
   background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line-control);
+  box-shadow: var(--shadow-card);
 }
 .icon-btn.ink {
   color: var(--ink);
@@ -423,8 +421,22 @@ input[type='search']::-webkit-search-cancel-button {
   color: var(--on-accent);
 }
 .btn-tonal {
-  background: var(--primary-soft);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   color: var(--primary-strong);
+}
+.card .btn-tonal,
+.group .btn-tonal,
+dialog .btn-tonal,
+.describe .btn-tonal,
+.notice .btn-tonal {
+  background: var(--bg);
+  box-shadow: none;
+}
+.card .segmented,
+.group .segmented,
+dialog .segmented {
+  background: var(--bg);
 }
 .btn-tonal:disabled {
   color: var(--disabled);
@@ -529,9 +541,9 @@ input[type='search']::-webkit-search-cancel-button {
    lists, menus) — one surface with hairlines between the rows. */
 .card {
   background: var(--surface);
-  border-radius: var(--r-xl);
+  border-radius: var(--r-lg);
   padding: 18px;
-  box-shadow: var(--shadow-card), inset 0 0 0 1px var(--line);
+  box-shadow: var(--shadow-card);
   min-width: 0;
 }
 .list,
@@ -541,7 +553,7 @@ input[type='search']::-webkit-search-cancel-button {
   background: var(--surface);
   border-radius: var(--r-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-card), inset 0 0 0 1px var(--line);
+  box-shadow: var(--shadow-card);
   min-width: 0;
 }
 .list > * + *,
@@ -706,9 +718,9 @@ a.setting {
   min-width: 0;
   height: var(--btn-h);
   padding: 0 16px;
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   border: none;
-  box-shadow: inset 0 0 0 1px var(--line-field);
+  box-shadow: inset 0 0 0 1px var(--line-control);
   background: var(--surface);
   font-size: var(--t-body);
   outline: none;
@@ -716,7 +728,18 @@ a.setting {
   appearance: none;
   transition: box-shadow 0.15s;
 }
-.input:focus {
+.card .input,
+.group .input,
+dialog .input,
+.describe .input {
+  background: var(--bg);
+  box-shadow: none;
+}
+.input:focus,
+.card .input:focus,
+dialog .input:focus,
+.describe .input:focus {
+  background: var(--surface);
   box-shadow: inset 0 0 0 2px var(--primary);
 }
 .input::placeholder {
@@ -757,7 +780,7 @@ a.setting {
   pointer-events: none;
 }
 .input.title-input {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--t-title);
   font-weight: 700;
   height: 58px;
@@ -844,7 +867,7 @@ input.switch::after {
   transition: transform 0.2s;
 }
 input.switch:checked {
-  background: var(--success);
+  background: var(--primary);
 }
 input.switch:checked::after {
   transform: translateX(20px);

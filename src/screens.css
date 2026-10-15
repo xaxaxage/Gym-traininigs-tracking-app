@@ -48,7 +48,8 @@
 .tags li {
   padding: 5px 11px;
   border-radius: var(--r-pill);
-  background: var(--sunken);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-control);
   color: var(--ink-2);
   font-size: 13px;
   font-weight: 600;
@@ -148,15 +149,15 @@
   align-self: center;
   width: 52px;
   height: 52px;
-  border-radius: 16px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-soft);
-  color: var(--accent-icon);
+  background: var(--bg);
+  color: var(--primary);
 }
 .empty-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--t-head);
   font-weight: 700;
 }
@@ -246,9 +247,19 @@
   letter-spacing: 0.01em;
   border-radius: var(--r-sm);
 }
+.nav-link svg {
+  width: 56px;
+  height: 30px;
+  padding: 4px 0;
+  border-radius: var(--r-pill);
+  transition: background-color 0.2s;
+}
 .nav-link[aria-current='page'] {
   color: var(--primary);
   font-weight: 700;
+}
+.nav-link[aria-current='page'] svg {
+  background: var(--primary-soft);
 }
 .mini-bar {
   position: fixed;
@@ -366,7 +377,7 @@ dialog.sheet::backdrop {
   margin-right: -8px;
 }
 .sheet-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--t-head);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -443,32 +454,38 @@ dialog.sheet::backdrop {
   display: flex;
   align-items: center;
   gap: 14px;
-  min-height: 72px;
-  padding: 12px 14px;
+  min-height: 68px;
+  padding: 12px 16px 12px 14px;
   border: none;
-  border-radius: var(--r-xl);
-  background: var(--surface);
-  box-shadow: var(--shadow-card), inset 0 0 0 1px var(--line);
-  color: var(--ink);
+  border-radius: var(--r-lg);
+  background: var(--primary);
+  color: var(--on-primary);
   text-align: left;
   width: 100%;
 }
 .quick-start-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary);
+  background: color-mix(in srgb, var(--on-primary) 16%, transparent);
   color: var(--on-primary);
   flex-shrink: 0;
 }
+.quick-start .row-main,
 .quick-start .row-title {
+  color: var(--on-primary);
   font-weight: 700;
 }
+.quick-start .row-sub {
+  color: var(--on-primary);
+  opacity: 0.8;
+}
 .quick-start > svg:last-child {
-  color: var(--faint);
+  color: var(--on-primary);
+  opacity: 0.7;
   flex-shrink: 0;
 }
 .active-card {
@@ -536,31 +553,37 @@ dialog.sheet::backdrop {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: var(--t-cap);
   font-weight: 600;
   color: var(--muted);
 }
 .week-dot {
-  width: 30px;
-  height: 30px;
-  border-radius: 15px;
-  background: var(--sunken);
+  width: 36px;
+  height: 36px;
   max-width: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-2);
 }
 .week-days li.on .week-dot {
-  background: var(--accent);
+  background: var(--primary);
+  color: var(--on-primary);
 }
 .week-days li.today .week-letter {
   color: var(--ink);
   font-weight: 800;
 }
-.week-days li.today .week-dot {
-  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink);
+.week-days li.today:not(.on) .week-dot {
+  box-shadow: inset 0 0 0 2px var(--primary);
+  color: var(--primary);
 }
 .week-days li.later .week-dot {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--line-field);
+  color: var(--faint);
 }
 .routine-list {
   display: flex;
@@ -583,7 +606,7 @@ dialog.sheet::backdrop {
   justify-content: center;
 }
 .routine-name {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--t-head);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -617,8 +640,7 @@ dialog.sheet::backdrop {
   align-items: center;
   gap: 12px;
   padding-right: 6px;
-  padding-top: 12px;
-  box-shadow: inset 0 1px 0 var(--divider);
+  padding-top: 4px;
 }
 .routine-meta {
   font-size: 13px;
@@ -717,7 +739,7 @@ dialog.sheet::backdrop {
 }
 .exercise-name {
   flex: 1;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -745,17 +767,13 @@ h2.exercise-name:not(:has(a)) {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 3px 8px;
-  border-radius: var(--r-pill);
-  background: var(--sunken);
   color: var(--muted);
-  font-size: var(--t-cap);
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   flex-shrink: 0;
 }
 .exercise-progress.done {
-  background: var(--success-soft);
-  color: var(--success-ink);
+  color: var(--primary);
 }
 .exercise-tools {
   display: flex;
@@ -877,7 +895,7 @@ button.set-num {
   min-height: 0;
 }
 .set-row.done .set-num {
-  color: var(--success-ink);
+  color: var(--primary);
 }
 .set-prev {
   min-width: 0;
@@ -915,9 +933,9 @@ button.set-num {
   min-width: 0;
   height: 46px;
   padding: 0 4px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: none;
-  background: var(--sunken);
+  background: var(--bg);
   text-align: center;
   font-size: 18px;
   font-weight: 700;
@@ -947,9 +965,9 @@ button.set-num {
 .check-btn {
   width: var(--tap-big);
   height: 46px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: none;
-  background: var(--sunken);
+  background: var(--bg);
   color: var(--muted);
   display: flex;
   align-items: center;
@@ -958,8 +976,8 @@ button.set-num {
   transition: background-color 0.15s;
 }
 .check-btn.on {
-  background: var(--success);
-  color: var(--on-success);
+  background: var(--primary);
+  color: var(--on-primary);
 }
 @container (max-width: 300px) {
   .set-prev {
@@ -1042,17 +1060,16 @@ button.set-num {
 }
 .mini-stats dt,
 .stat-grid dt {
-  font-size: var(--t-cap);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
 }
 .mini-stats dd,
 .stat-grid dd {
   margin: 0;
+  white-space: nowrap;
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: clamp(17px, 5.4vw, 22px);
   font-weight: 700;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
@@ -1438,15 +1455,14 @@ button.set-num {
   padding-top: 20px;
 }
 .summary-badge {
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: var(--shadow-accent);
+  background: var(--accent-soft);
+  color: var(--accent-icon);
   margin-bottom: 8px;
 }
 .summary-name {
@@ -1460,7 +1476,7 @@ button.set-num {
 .record-icon {
   width: 36px;
   height: 36px;
-  border-radius: 11px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1651,7 +1667,7 @@ button.set-num {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: var(--sunken);
+  background: transparent;
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -1768,27 +1784,25 @@ button.set-num {
   margin-right: -8px;
 }
 .setting-icon {
-  width: 30px;
+  width: 24px;
   height: 30px;
-  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #fff;
-  background: var(--primary);
+  color: var(--primary);
 }
 .setting-icon.accent {
-  background: var(--accent-strong);
+  color: var(--accent-icon);
 }
 .setting-icon.ink {
-  background: var(--ink-2);
+  color: var(--ink-2);
 }
 .setting-icon.success {
-  background: var(--success);
+  color: var(--success-ink);
 }
 .setting-icon.danger {
-  background: var(--danger);
+  color: var(--danger);
 }
 a.setting > svg:last-child {
   color: var(--faint);
@@ -2179,7 +2193,7 @@ ul.group {
 .week-bars li.this-week .week-bar {
   background: var(--primary-pale);
 }
-.week-pick.picked .week-bar {
+.week-bars .week-pick.picked .week-bar {
   background: var(--primary);
 }
 .week-bar-label {
@@ -2242,7 +2256,7 @@ ul.group {
 }
 .settings-section > h2 {
   padding: 0 4px;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--t-head);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -2354,4 +2368,46 @@ a.setting > svg:last-child,
   color: var(--primary-strong);
   font-size: 12px;
   font-weight: 700;
+}
+
+/* ── Card headings, empty notes, the volume card ──────────────────────── */
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.empty-note {
+  font-size: var(--t-sub);
+  line-height: 1.5;
+  color: var(--muted);
+  padding: 16px 18px;
+}
+.volume-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.volume-now {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.volume-value {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.volume-now .stat-line {
+  margin-top: 4px;
+}
+.volume-card .week-bars {
+  height: 120px;
+  margin-top: 4px;
+}
+.gemini-card .steps {
+  font-size: var(--t-sub);
 }
