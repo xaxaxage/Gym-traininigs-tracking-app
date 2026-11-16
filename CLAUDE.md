@@ -51,3 +51,5 @@ apps are in the app-playbook skill; this file holds what is specific to this one
 
 - The connector's `search_exercises` ignores "Mine".
 - Sets have no timestamps, so actual rest and set durations aren't recorded yet.
+- CI's build job is pinned to `ubuntu-24.04`: Playwright 1.56 can't install Chromium on Ubuntu 26.04
+  (`ubuntu-latest` since November 2026). Unpin after upgrading Playwright to a version that supports it.
